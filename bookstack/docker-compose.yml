@@ -1,0 +1,36 @@
+version: "2"
+
+services:
+  bookstack:
+    image: linuxserver/bookstack
+    restart: unless-stopped
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+      - ${DIR_BOOKSTACK}/bookstack/config:/config
+    environment:
+      - TZ=${ENV_TIMEZONE}
+      - DB_HOST=mariadb
+      - DB_DATABASE=${ENV_DB_DB}
+      - DB_USER=${ENV_DB_USER}
+      - DB_PASS=${ENV_DB_PASS}
+      - APP_URL=${ENV_APP_URL}
+    ports:
+      - ${PORT_BOOKSTACK}:80
+    depends_on:
+      - mariadb
+  mariadb:
+    image: mariadb:10
+    restart: unless-stopped
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+      - ${DIR_BOOKSTACK}/mariadb/mysql:/var/lib/mysql
+    environment:
+      - TZ=${ENV_TIMEZONE}
+      - MYSQL_ROOT_PASSWORD=${ENV_DB_ROOTPASS}
+      - MYSQL_DATABASE=${ENV_DB_DB}
+      - MYSQL_USER=${ENV_DB_USER}
+      - MYSQL_PASSWORD=${ENV_DB_PASS}
+

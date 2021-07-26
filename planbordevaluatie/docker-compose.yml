@@ -1,0 +1,12 @@
+version: '2'
+
+services:
+  planbordevaluatie:
+    image: joene/planbordevaluatie:latest
+    restart: unless-stopped
+    ports:
+      - ${PORT_PLANBORDEVALUATIE}:8000
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+      - ${DIR_PLANBORDEVALUATIE}:/src/db

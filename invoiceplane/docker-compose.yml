@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  web:
+    image: bitnami/nginx:1.16
+    ports:
+      - ${PORT_INVOICEPLANE}:8085
+    depends_on:
+      - app
+    volumes:
+      - ${DIR_INVOICEPLANE}/app:/app:rw,delegated
+      - ${DIR_INVOICEPLANE}/app/application/docker/nginx/site.conf:/opt/bitnami/nginx/conf/vhosts/site.conf:ro
+    user: root
+
+  app:
+    #image: bitnami/php-fpm:7.3
+    build:
+      context: .
+      dockerfile: Dockerfile-php
+    restart: always
+    volumes:
+      - ${DIR_INVOICEPLANE}/app:/app:rw,delegated
+      - ${DIR_INVOICEPLANE}/app/application/docker/php/php-dev.ini:/opt/bitnami/php/etc/conf.d/php.ini:ro
+    depends_on:
+      - db
+
+  db:
+    image: bitnami/mariadb:10.3
+    restart: always
+    environment: 
+      - MARIADB_ROOT_PASSWORD=M5riaDB!
+      - MARIADB_USER=plane
+      - MARIADB_PASSWORD=Pl5ne!
+      - MARIADB_DATABASE=plane
+    volumes:
+      - ${DIR_INVOICEPLANE}/mariadb/data:/bitnami
+

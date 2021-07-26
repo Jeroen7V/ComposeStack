@@ -1,0 +1,11 @@
+version: '2'
+
+services:
+  discogssorter:
+    image: joene/discogssorter:latest
+    restart: unless-stopped
+    ports:
+      - ${PORT_DISCOGSSORTER}:8000
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
