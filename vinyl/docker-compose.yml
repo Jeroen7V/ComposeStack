@@ -1,11 +1,14 @@
 version: '2'
 
 services:
-  discogssorter:
+  vinyl_app:
     image: joene/discogssorter:latest
     restart: unless-stopped
-    ports:
-      - ${PORT_DISCOGSSORTER}:8000
     volumes:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+
+networks:
+  default:
+    external:
+      name: npm_network

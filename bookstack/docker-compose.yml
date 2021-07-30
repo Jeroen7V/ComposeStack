@@ -1,7 +1,7 @@
 version: "2"
 
 services:
-  bookstack:
+  bookstack_app:
     image: linuxserver/bookstack
     restart: unless-stopped
     volumes:
@@ -10,16 +10,14 @@ services:
       - ${DIR_BOOKSTACK}/bookstack/config:/config
     environment:
       - TZ=${ENV_TIMEZONE}
-      - DB_HOST=mariadb
+      - DB_HOST=bookstack_db
       - DB_DATABASE=${ENV_DB_DB}
       - DB_USER=${ENV_DB_USER}
       - DB_PASS=${ENV_DB_PASS}
       - APP_URL=${ENV_APP_URL}
-    ports:
-      - ${PORT_BOOKSTACK}:80
     depends_on:
-      - mariadb
-  mariadb:
+      - bookstack_db
+  bookstack_db:
     image: mariadb:10
     restart: unless-stopped
     command: --default-authentication-plugin=mysql_native_password
@@ -34,3 +32,7 @@ services:
       - MYSQL_USER=${ENV_DB_USER}
       - MYSQL_PASSWORD=${ENV_DB_PASS}
 
+networks:
+  default:
+    external:
+      name: npm_network
