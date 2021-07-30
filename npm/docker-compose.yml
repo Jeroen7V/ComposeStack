@@ -1,14 +1,16 @@
 version: '3'
 services:
-  npm:
+  npm_app:
     image: 'jc21/nginx-proxy-manager:latest'
     restart: unless-stopped
     ports:
       - '80:80'
       - '443:443'
       - '81:81'
+    depends_on:
+      - npm_db
     environment:
-      DB_MYSQL_HOST: "db"
+      DB_MYSQL_HOST: "npm_db"
       DB_MYSQL_PORT: 3306
       DB_MYSQL_USER: "${MYSQL_USER}"
       DB_MYSQL_PASSWORD: "${MYSQL_PW}"
@@ -16,7 +18,7 @@ services:
     volumes:
       - ${DATADIR}/npm/data:/data
       - ${DATADIR}/npm/letsencrypt:/etc/letsencrypt
-  db:
+  npm_db:
     image: 'jc21/mariadb-aria:latest'
     restart: unless-stopped
     environment:
