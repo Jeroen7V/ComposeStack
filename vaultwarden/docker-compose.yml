@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  vaultwarden_app:
+    image: vaultwarden/server:latest
+    restart: always
+    environment:
+      - ADMIN_TOKEN=${TOKEN}
+      - WEBSOCKET_ENABLED=true  # Enable WebSocket notifications.
+      - SIGNUPS_ALLOWED=false
+    volumes:
+      - ${DATADIR}/app:/data
+
+networks:
+  default:
+    external:
+      name: npm_network
