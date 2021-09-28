@@ -1,0 +1,26 @@
+---
+version: '3.3'
+services:
+  firefly_app:
+    image: fireflyiii/core:latest
+    restart: unless-stopped
+    depends_on:
+      - firefly_db
+    env_file: .firefly.env
+    volumes:
+      - ${DATADIR}/app/upload:/var/www/html/storage/upload
+  firefly_db:
+    image: mariadb
+    restart: unless-stopped
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
+      MYSQL_USER: ${MYSQL_USR}
+      MYSQL_PASSWORD: ${MYSQL_PWD}
+      MYSQL_DATABASE: ${MYSQL_DB}
+    volumes:
+      - ${DATADIR}/db/data:/var/lib/mysql
+
+networks:
+  default:
+    external:
+      name: npm_network
