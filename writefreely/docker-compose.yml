@@ -1,0 +1,27 @@
+version: "3"
+
+networks:
+  default:
+    external:
+      name: npm_network
+
+services:
+  writefreely-app:
+    image: writeas/writefreely:latest
+    volumes:
+      - ${DATADIR}/app/keys:/go/keys
+      - ${DATADIR}/app/config.ini:/go/config.ini
+    depends_on:
+      - writefreely-db
+    restart: unless-stopped
+
+  writefreely-db:
+    image: mariadb:latest
+    volumes:
+      - ${DATADIR}/db/data:/var/lib/mysql/data
+    environment:
+      - MARIADB_DATABASE=${DB_DB}
+      - MARIADB_ROOT_PASSWORD=${DB_RPWD}
+      - MARIADB_USER=${DB_USR}
+      - MARIADB_PASSWORD=${DB_PWD}
+    restart: unless-stopped
