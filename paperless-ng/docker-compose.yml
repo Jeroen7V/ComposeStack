@@ -1,0 +1,49 @@
+version: "3.4"
+
+services:
+  paperless-broker:
+    image: redis:6.0
+    restart: unless-stopped
+
+  paperless-db:
+    image: postgres:13
+    restart: unless-stopped
+    volumes:
+      - ${DATADIR}/db/data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${DB_DB}
+      POSTGRES_USER: ${DB_USR}
+      POSTGRES_PASSWORD: ${DB_PWD}
+
+  paperless-app:
+    image: jonaswinkler/paperless-ng:latest
+    restart: unless-stopped
+    depends_on:
+      - paperless-db
+      - paperless-broker
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    volumes:
+      - ${DATADIR}/app/data:/usr/src/paperless/data
+      - ${DATADIR}/app/media:/usr/src/paperless/media
+      - ${DATADIR}/app/export:/usr/src/paperless/export
+      - ${DATADIR}/app/consume:/usr/src/paperless/consume
+    environment:
+      PAPERLESS_TIME_ZONE: Europe/Brussels
+      PAPERLESS_REDIS: redis://broker:6379
+      PAPERLESS_DBHOST: paperless-db
+      PAPERLESS_DBNAME: ${DB_DB}
+      PAPERLESS_DBUSER: ${DB_USR}
+      PAPERLESS_DBPASS: ${DB_PWD}
+      PAPERLESS_OCR_LANGUAGES: ${APP_OCRS}
+      PAPERLESS_OCR_LANGUAGE: ${APP_OCR}
+      PAPERLESS_SECRET_KEY: ${APP_KEY}
+
+networks:
+  default:
+    external:
+      name: npm_network
+
