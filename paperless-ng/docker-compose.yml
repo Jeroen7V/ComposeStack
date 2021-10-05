@@ -33,7 +33,7 @@ services:
       - ${DATADIR}/app/consume:/usr/src/paperless/consume
     environment:
       PAPERLESS_TIME_ZONE: Europe/Brussels
-      PAPERLESS_REDIS: redis://broker:6379
+      PAPERLESS_REDIS: redis://paperless-broker:6379
       PAPERLESS_DBHOST: paperless-db
       PAPERLESS_DBNAME: ${DB_DB}
       PAPERLESS_DBUSER: ${DB_USR}
