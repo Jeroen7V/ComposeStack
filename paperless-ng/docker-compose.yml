@@ -16,7 +16,9 @@ services:
       POSTGRES_PASSWORD: ${DB_PWD}
 
   paperless-app:
-    image: jonaswinkler/paperless-ng:latest
+    build:
+      context: ./
+      dockerfile: Dockerfile
     restart: unless-stopped
     depends_on:
       - paperless-db
