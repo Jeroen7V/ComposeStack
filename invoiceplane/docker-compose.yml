@@ -26,10 +26,10 @@ services:
     image: bitnami/mariadb:10.3
     restart: always
     environment: 
-      - MARIADB_ROOT_PASSWORD=M5riaDB!
-      - MARIADB_USER=plane
-      - MARIADB_PASSWORD=Pl5ne!
-      - MARIADB_DATABASE=plane
+      - MARIADB_ROOT_PASSWORD=${DB_RPW}
+      - MARIADB_USER=${DB_USR}
+      - MARIADB_PASSWORD=${DB_PWD}
+      - MARIADB_DATABASE=${DB_DB}
     volumes:
       - ${DIR_INVOICEPLANE}/mariadb/data:/bitnami
 
