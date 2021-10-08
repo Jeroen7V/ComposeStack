@@ -43,6 +43,11 @@ services:
       PAPERLESS_OCR_LANGUAGES: ${APP_OCRS}
       PAPERLESS_OCR_LANGUAGE: ${APP_OCR}
       PAPERLESS_SECRET_KEY: ${APP_KEY}
+    labels:
+      flame.type: application
+      flame.name: Paperless
+      flame.url: ${APP_URL}
+      flame.icon: file-document-multiple
 
 networks:
   default:

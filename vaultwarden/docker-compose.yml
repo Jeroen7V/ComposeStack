@@ -10,6 +10,11 @@ services:
       - SIGNUPS_ALLOWED=false
     volumes:
       - ${DATADIR}/app:/data
+    labels:
+      flame.type: application
+      flame.name: Vaultwarden
+      flame.url: ${APP_URL}
+      flame.icon: safe-square
 
 networks:
   default:

@@ -14,6 +14,11 @@ services:
     depends_on:
       - writefreely-db
     restart: unless-stopped
+    labels:
+      flame.type: application
+      flame.name: WriteFreely
+      flame.url: ${APP_URL}
+      flame.icon: typewriter
 
   writefreely-db:
     image: mariadb:latest

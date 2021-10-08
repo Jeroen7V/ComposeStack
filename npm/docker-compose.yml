@@ -18,6 +18,11 @@ services:
     volumes:
       - ${DATADIR}/npm/data:/data
       - ${DATADIR}/npm/letsencrypt:/etc/letsencrypt
+    labels:
+      flame.type: application
+      flame.name: Nginx Proxy Manager
+      flame.url: ${NPM_URL}
+      flame.icon: server-security
   npm_db:
     image: 'jc21/mariadb-aria:latest'
     restart: unless-stopped

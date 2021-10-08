@@ -26,6 +26,11 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PORT=5432
       - POSTGRES_HOST=joplin_db
+    labels:
+      flame.type: application
+      flame.name: Joplin
+      flame.url: ${JOPLIN_URL}
+      flame.icon: notebook
 
 networks:
   default:

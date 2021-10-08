@@ -9,6 +9,11 @@ services:
     env_file: .firefly.env
     volumes:
       - ${DATADIR}/app/upload:/var/www/html/storage/upload
+    labels:
+      flame.type: application
+      flame.name: Firefly
+      flame.url: ${FF_URL}
+      flame.icon: cash-multiple
   firefly_db:
     image: mariadb
     restart: unless-stopped

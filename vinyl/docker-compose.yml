@@ -7,6 +7,11 @@ services:
     volumes:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+    labels:
+      flame.type: application
+      flame.name: Vinyl Sorter
+      flame.url: ${APP_URL}
+      flame.icon: album
 
 networks:
   default:
