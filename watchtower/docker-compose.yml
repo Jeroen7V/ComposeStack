@@ -11,6 +11,7 @@ services:
     environment:
       TZ: ${ENV_TIMEZONE}
       WATCHTOWER_SCHEDULE: ${SCHEDULE}
+      WATCHTOWER_NO_STARTUP_MESSAGE: "true"
       WATCHTOWER_MONITOR_ONLY: "true"
       WATCHTOWER_NO_RESTART: "true"
       WATCHTOWER_NOTIFICATIONS: email
