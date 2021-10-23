@@ -21,6 +21,8 @@ services:
       - ${DIR_INVOICEPLANE}/app/application/docker/php/php-dev.ini:/opt/bitnami/php/etc/conf.d/php.ini:ro
     depends_on:
       - al_db
+    labels:
+      com.centurylinklabs.watchtower.enable: "false"
 
   al_db:
     image: bitnami/mariadb:10.3

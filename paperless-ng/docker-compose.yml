@@ -48,6 +48,7 @@ services:
       flame.name: Paperless
       flame.url: ${APP_URL}
       flame.icon: file-document-multiple
+      com.centurylinklabs.watchtower.enable: "false"
 
 networks:
   default:
