@@ -1,0 +1,27 @@
+version: '2.4'
+
+networks:
+  services:
+    external:
+      name: services
+
+services:
+  duplicati:
+    container_name: duplicati
+    image: ghcr.io/linuxserver/duplicati
+    hostname: duplicati
+    domainname: ${DOMAINNAME}
+    networks:
+      services:
+        ipv4_address: ${IP_DUPLICATI}
+    environment:
+    - TZ=${TIMEZONE}
+    - PUID=0
+    - PGID=0
+    volumes:
+    - ${DIR_CONFIG}/duplicati/config:/config
+    - ${DIR_BACKUP_HOMES}:/source/homes:ro
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
