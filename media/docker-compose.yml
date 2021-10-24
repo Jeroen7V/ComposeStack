@@ -1,0 +1,151 @@
+version: '2.4'
+
+networks:
+  services:
+    external:
+      name: services
+
+services:
+  transmission:
+    container_name: transmission
+    image: linuxserver/transmission
+    hostname: transmission
+    domainname: ${DOMAINNAME}
+    restart: unless-stopped
+    networks:
+      services:
+        ipv4_address: ${IP_TRANSMISSION}
+    environment:
+    - TZ=${TIMEZONE}
+    - VIRTUAL_HOST=transmission.${DOMAINNAME}
+    - PGID=0
+    - PUID=0
+    volumes:
+    - ${DIR_DOWNLOADS}:/downloads
+    - ${DIR_CONFIG}/transmission/config:/config
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+
+  plex:
+    container_name: plex
+    image: plexinc/pms-docker
+    hostname: plex
+    domainname: ${DOMAINNAME}
+    restart: unless-stopped
+    networks:
+      services:
+        ipv4_address: ${IP_PLEX}
+    environment:
+    - VERSION=latest
+    - PUID=0
+    - PGID=0
+    - TZ=${TIMEZONE}
+    - PLEX_CLAIM=${PLEX_CLAIM}
+    - PLEX_UID=0
+    - PLEX_GID=0
+    - ADVERTISE_IP=http://${IP_PLEX}:32400
+    volumes:
+    - /etc/localtime:/etc/localtime:ro
+    - ${DIR_CONFIG}/plex/config:/config
+    - ${DIR_FILMS}:/data/movies
+    - ${DIR_SERIES}:/data/tvshows
+    - ${DIR_MUSIC}:/data/music
+    - ${DIR_SPORTS}:/data/sports
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+
+  jackett:
+    container_name: jackett
+    image: linuxserver/jackett
+    hostname: jackett
+    domainname: ${DOMAINNAME}
+    restart: unless-stopped
+    networks:
+      services:
+        ipv4_address: ${IP_JACKETT}
+    environment:
+    - TZ=${TIMEZONE}
+    - PUID=0
+    - PGID=0
+    volumes:
+    - /etc/localtime:/etc/localtime:ro
+    - ${DIR_CONFIG}/jackett/config:/config
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+
+  sonarr:
+    container_name: sonarr
+    image: linuxserver/sonarr
+    hostname: sonarr
+    domainname: ${DOMAINNAME}
+    restart: unless-stopped
+    networks:
+      services:
+        ipv4_address: ${IP_SONARR}
+    environment:
+    - TZ=${TIMEZONE}
+    - PUID=0
+    - PGID=0
+    volumes:
+    - /etc/localtime:/etc/localtime:ro
+    - ${DIR_CONFIG}/sonarr/config:/config
+    - ${DIR_SERIES}:/tv
+    - ${DIR_DOWNLOADS}:/downloads
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+
+  radarr:
+    container_name: radarr
+    image: linuxserver/radarr
+    hostname: radarr
+    domainname: ${DOMAINNAME}
+    restart: unless-stopped
+    networks:
+      services:
+        ipv4_address: ${IP_RADARR}
+    environment:
+    - TZ=${TIMEZONE}
+    - PUID=0
+    - PGID=0
+    volumes:
+    - /etc/localtime:/etc/localtime:ro
+    - ${DIR_CONFIG}/radarr/config:/config
+    - ${DIR_FILMS}:/movies
+    - ${DIR_SPORTS}:/sports
+    - ${DIR_DOWNLOADS}:/downloads
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+
+  bazarr:
+    container_name: bazarr
+    image: linuxserver/bazarr
+    hostname: bazarr
+    domainname: ${DOMAINNAME}
+    restart: unless-stopped
+    networks:
+      services:
+        ipv4_address: ${IP_BAZARR}
+    environment:
+    - TZ=${TIMEZONE}
+    - PUID=0
+    - PGID=0
+    volumes:
+    - /etc/localtime:/etc/localtime:ro
+    - ${DIR_CONFIG}/bazarr/config:/config
+    - ${DIR_FILMS}:/movies
+    - ${DIR_SERIES}:/tv
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+
