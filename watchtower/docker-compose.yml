@@ -5,7 +5,6 @@ services:
     image: containrrr/watchtower
     restart: unless-stopped
     volumes:
-      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
@@ -14,8 +13,10 @@ services:
       WATCHTOWER_NO_STARTUP_MESSAGE: "true"
       WATCHTOWER_MONITOR_ONLY: "true"
       WATCHTOWER_NO_RESTART: "true"
-      WATCHTOWER_NOTIFICATIONS: email
+      WATCHTOWER_NOTIFICATIONS: "email msteams"
       WATCHTOWER_NOTIFICATION_EMAIL_FROM: ${EMAIL_FROM}
       WATCHTOWER_NOTIFICATION_EMAIL_TO: ${EMAIL_TO}
       WATCHTOWER_NOTIFICATION_EMAIL_SERVER: ${EMAIL_SERVER}
+      WATCHTOWER_NOTIFICATION_MSTEAMS_HOOK_URL: ${TEAMS_HOOK}
+      WATCHTOWER_NOTIFICATION_MSTEAMS_USE_LOG_DATA: "true"
 
