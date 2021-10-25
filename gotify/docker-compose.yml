@@ -1,0 +1,21 @@
+version: "3"
+
+networks:
+  default:
+    external:
+      name: npm_network
+
+services:
+  gotify-app:
+    image: ghcr.io/gotify/server:latest
+    volumes:
+      - ${DATADIR}/gotify:/app/data
+    restart: unless-stopped
+    environment:
+      GOTIFY_DEFAULTUSER_NAME: ${USR_USR}
+      GOTIFY_DEFAULTUSER_PASS: ${USR_PWD}
+    labels:
+      flame.type: application
+      flame.name: Gotify
+      flame.url: ${APP_URL}
+      flame.icon: bell
