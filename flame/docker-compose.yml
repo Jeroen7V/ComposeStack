@@ -8,6 +8,10 @@ services:
     - ${DATADIR}/app/data:/app/data
     - /var/run/docker.sock:/var/run/docker.sock:ro
     labels:
+      flame.type: application
+      flame.name: ${XTRA_NAMES}
+      flame.url: ${XTRA_URLS}
+      flame.icon: ${XTRA_ICONS}
       traefik.http.routers.flame.rule: Host(`${APP_URL}`)
       traefik.http.services.flame.loadbalancer.server.port: 5005
       traefik.http.routers.flame.middlewares: traefik-forward-auth
