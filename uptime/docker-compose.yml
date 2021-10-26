@@ -1,0 +1,18 @@
+version: "3"
+
+networks:
+  default:
+    external:
+      name: npm_network
+
+services:
+  uptime-app:
+    image: louislam/uptime-kuma:latest
+    volumes:
+      - ${DATADIR}/app:/app/data
+    restart: unless-stopped
+    labels:
+      flame.type: application
+      flame.name: Uptime Kuma
+      flame.url: ${APP_URL}
+      flame.icon: check-network
