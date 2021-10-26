@@ -1,0 +1,31 @@
+version: "3"
+
+networks:
+  default:
+    external:
+      name: npm_network
+
+services:
+  traefik-app:
+    image: traefik:v2.2
+    command: 
+      - --providers.docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
+  traefik-forward-auth:
+    image: thomseddon/traefik-forward-auth:2
+    environment:
+      SECRET: ${SECRET}
+      COOKIE_DOMAIN: ${DOMAIN}
+      DEFAULT_PROVIDER: oidc
+      PROVIDERS_OIDC_ISSUER_URL: ${CLIENT_URL}
+      PROVIDERS_OIDC_CLIENT_ID: ${CLIENT_ID}
+      PROVIDERS_OIDC_CLIENT_SECRET: ${CLIENT_SECRET}
+      WHITELIST: ${WHITELIST}
+    labels:
+      traefik.http.services.traefik-forward-auth.loadbalancer.server.port: 4181
+      traefik.http.middlewares.traefik-forward-auth.forwardauth.address: ${AUTH_URL}
+      traefik.http.middlewares.traefik-forward-auth.forwardauth.authResponseHeaders: X-Forwarded-User
+
