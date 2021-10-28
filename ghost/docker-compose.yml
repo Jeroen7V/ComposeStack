@@ -1,0 +1,24 @@
+version: "3.1"
+
+networks:
+  default:
+    external:
+      name: npm_network
+
+services:
+  ghost-app:
+    image: ghost:4-alpine
+    volumes:
+      - ${DATADIR}/app:/var/lib/ghost/content
+    restart: unless-stopped
+    environment:
+      url: ${APP_URL}
+      database__client: sqlite3
+      useMinFiles: "true"
+      compress: "true"
+      imageOptimization: "true"
+    labels:
+      flame.type: application
+      flame.name: Ghost
+      flame.url: ${APP_URL}
+      flame.icon: typewriter
