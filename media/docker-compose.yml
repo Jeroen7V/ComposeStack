@@ -149,3 +149,39 @@ services:
       options:
         max-size: "1m"
 
+  podgrab:
+    container_name: podgrab
+    image: akhilrex/podgrab
+    hostname: podgrab
+    domainname: ${DOMAINNAME}
+    restart: unless-stopped
+    networks:
+      services:
+        ipv4_address: ${IP_PODGRAB}
+    environment:
+      CHECK_FREQUENCY: 240
+    volumes:
+    - ${DIR_CONFIG}/podgrab/config:/config
+    - ${DIR_PODCASTS}:/assets
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+
+  jellyfin:
+    container_name: jellyfin
+    image: jellyfin/jellyfin:latest
+    hostname: jellyfin
+    domainname: ${DOMAINNAME}
+    restart: unless-stopped
+    networks:
+      services:
+        ipv4_address: ${IP_JELLYFIN}
+    volumes:
+      - ${DIR_CONFIG}/jellyfin/config:/config
+      - ${DIR_CONFIG}/jellyfin/cache:/cache
+      - ${DIR_MUSIC}:/media/music:ro
+      - ${DIR_PODCASTS}:/media/podcasts:ro
+      - ${DIR_FILMS}:/media/movies:ro
+      - ${DIR_SERIES}:/media/tvshows:ro
+      - ${DIR_SPORTS}:/media/sports:ro
