@@ -1,0 +1,38 @@
+version: '3'
+services:
+  shynet-app:
+    image: milesmcc/shynet:latest
+    restart: unless-stopped
+    depends_on:
+      - shynet-db
+    environment:
+      DB_HOST: shynet-db
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PW}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET}
+      TIME_ZONE: ${TZ}
+      SHOW_SHYNET_VERSION: "False"
+    labels:
+      flame.type: application
+      flame.name: Shynet
+      flame.url: ${SHY_URL}
+      flame.icon: home-analytics
+      traefik.http.routers.shynet.rule: Host(`${TRK_URL}`)
+      traefik.http.services.shynet.loadbalancer.server.port: 8080
+      traefik.http.routers.shynet.middlewares: traefik-forward-auth
+
+  shynet-db:
+    image: postgres:latest
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PW}
+    volumes:
+      - ${DATADIR}/db/data:/var/lib/postgresql/data
+
+networks:
+  default:
+    external:
+      name: npm_network
