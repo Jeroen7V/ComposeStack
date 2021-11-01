@@ -1,23 +1,15 @@
 version: '2.4'
 
 networks:
-  services:
+  default:
     external:
-      name: services
+      name: ${NETWORK}
 
 services:
   transmission:
-    container_name: transmission
     image: linuxserver/transmission
-    hostname: transmission
-    domainname: ${DOMAINNAME}
-    restart: unless-stopped
-    networks:
-      services:
-        ipv4_address: ${IP_TRANSMISSION}
     environment:
     - TZ=${TIMEZONE}
-    - VIRTUAL_HOST=transmission.${DOMAINNAME}
     - PGID=0
     - PUID=0
     volumes:
@@ -29,14 +21,8 @@ services:
         max-size: "1m"
 
 #  plex:
-#    container_name: plex
 #    image: plexinc/pms-docker
-#    hostname: plex
-#    domainname: ${DOMAINNAME}
 #    restart: unless-stopped
-#    networks:
-#      services:
-#        ipv4_address: ${IP_PLEX}
 #    environment:
 #    - VERSION=latest
 #    - PUID=0
@@ -59,41 +45,28 @@ services:
 #        max-size: "1m"
 
   jackett:
-    container_name: jackett
     image: linuxserver/jackett
-    hostname: jackett
-    domainname: ${DOMAINNAME}
     restart: unless-stopped
-    networks:
-      services:
-        ipv4_address: ${IP_JACKETT}
     environment:
     - TZ=${TIMEZONE}
     - PUID=0
     - PGID=0
     volumes:
-    - /etc/localtime:/etc/localtime:ro
     - ${DIR_CONFIG}/jackett/config:/config
+    - ${DIR_DOWNLOADS}:/downloads
     logging:
       driver: json-file
       options:
         max-size: "1m"
 
   sonarr:
-    container_name: sonarr
     image: linuxserver/sonarr
-    hostname: sonarr
-    domainname: ${DOMAINNAME}
     restart: unless-stopped
-    networks:
-      services:
-        ipv4_address: ${IP_SONARR}
     environment:
     - TZ=${TIMEZONE}
     - PUID=0
     - PGID=0
     volumes:
-    - /etc/localtime:/etc/localtime:ro
     - ${DIR_CONFIG}/sonarr/config:/config
     - ${DIR_SERIES}:/tv
     - ${DIR_DOWNLOADS}:/downloads
@@ -103,20 +76,13 @@ services:
         max-size: "1m"
 
   radarr:
-    container_name: radarr
     image: linuxserver/radarr
-    hostname: radarr
-    domainname: ${DOMAINNAME}
     restart: unless-stopped
-    networks:
-      services:
-        ipv4_address: ${IP_RADARR}
     environment:
     - TZ=${TIMEZONE}
     - PUID=0
     - PGID=0
     volumes:
-    - /etc/localtime:/etc/localtime:ro
     - ${DIR_CONFIG}/radarr/config:/config
     - ${DIR_FILMS}:/movies
     - ${DIR_SPORTS}:/sports
@@ -127,20 +93,13 @@ services:
         max-size: "1m"
 
   bazarr:
-    container_name: bazarr
     image: linuxserver/bazarr
-    hostname: bazarr
-    domainname: ${DOMAINNAME}
     restart: unless-stopped
-    networks:
-      services:
-        ipv4_address: ${IP_BAZARR}
     environment:
     - TZ=${TIMEZONE}
     - PUID=0
     - PGID=0
     volumes:
-    - /etc/localtime:/etc/localtime:ro
     - ${DIR_CONFIG}/bazarr/config:/config
     - ${DIR_FILMS}:/movies
     - ${DIR_SERIES}:/tv
@@ -150,14 +109,8 @@ services:
         max-size: "1m"
 
   podgrab:
-    container_name: podgrab
     image: akhilrex/podgrab
-    hostname: podgrab
-    domainname: ${DOMAINNAME}
     restart: unless-stopped
-    networks:
-      services:
-        ipv4_address: ${IP_PODGRAB}
     environment:
       CHECK_FREQUENCY: 240
     volumes:
@@ -169,14 +122,7 @@ services:
         max-size: "1m"
 
   jellyfin:
-    container_name: jellyfin
     image: jellyfin/jellyfin:latest
-    hostname: jellyfin
-    domainname: ${DOMAINNAME}
-    restart: unless-stopped
-    networks:
-      services:
-        ipv4_address: ${IP_JELLYFIN}
     environment:
       JELLYFIN_PublishedServerUrl: ${URL_JELLYFIN}
     volumes:
