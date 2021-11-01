@@ -37,4 +37,4 @@ services:
 networks:
   default:
     external:
-      name: npm_network
+      name: ${NETWORK}
