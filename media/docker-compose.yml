@@ -28,35 +28,35 @@ services:
       options:
         max-size: "1m"
 
-  plex:
-    container_name: plex
-    image: plexinc/pms-docker
-    hostname: plex
-    domainname: ${DOMAINNAME}
-    restart: unless-stopped
-    networks:
-      services:
-        ipv4_address: ${IP_PLEX}
-    environment:
-    - VERSION=latest
-    - PUID=0
-    - PGID=0
-    - TZ=${TIMEZONE}
-    - PLEX_CLAIM=${PLEX_CLAIM}
-    - PLEX_UID=0
-    - PLEX_GID=0
-    - ADVERTISE_IP=http://${IP_PLEX}:32400
-    volumes:
-    - /etc/localtime:/etc/localtime:ro
-    - ${DIR_CONFIG}/plex/config:/config
-    - ${DIR_FILMS}:/data/movies
-    - ${DIR_SERIES}:/data/tvshows
-    - ${DIR_MUSIC}:/data/music
-    - ${DIR_SPORTS}:/data/sports
-    logging:
-      driver: json-file
-      options:
-        max-size: "1m"
+#  plex:
+#    container_name: plex
+#    image: plexinc/pms-docker
+#    hostname: plex
+#    domainname: ${DOMAINNAME}
+#    restart: unless-stopped
+#    networks:
+#      services:
+#        ipv4_address: ${IP_PLEX}
+#    environment:
+#    - VERSION=latest
+#    - PUID=0
+#    - PGID=0
+#    - TZ=${TIMEZONE}
+#    - PLEX_CLAIM=${PLEX_CLAIM}
+#    - PLEX_UID=0
+#    - PLEX_GID=0
+#    - ADVERTISE_IP=http://${IP_PLEX}:32400
+#    volumes:
+#    - /etc/localtime:/etc/localtime:ro
+#    - ${DIR_CONFIG}/plex/config:/config
+#    - ${DIR_FILMS}:/data/movies:ro
+#    - ${DIR_SERIES}:/data/tvshows:ro
+#    #- ${DIR_MUSIC}:/data/music:ro
+#    - ${DIR_SPORTS}:/data/sports:ro
+#    logging:
+#      driver: json-file
+#      options:
+#        max-size: "1m"
 
   jackett:
     container_name: jackett
@@ -177,6 +177,8 @@ services:
     networks:
       services:
         ipv4_address: ${IP_JELLYFIN}
+    environment:
+      JELLYFIN_PublishedServerUrl: ${URL_JELLYFIN}
     volumes:
       - ${DIR_CONFIG}/jellyfin/config:/config
       - ${DIR_CONFIG}/jellyfin/cache:/cache
@@ -185,3 +187,5 @@ services:
       - ${DIR_FILMS}:/media/movies:ro
       - ${DIR_SERIES}:/media/tvshows:ro
       - ${DIR_SPORTS}:/media/sports:ro
+    devices:
+      - /dev/dri:/dev/dri
