@@ -3,6 +3,7 @@ version: '3'
 services:
   al_web:
     image: bitnami/nginx:1.16
+    restart: always
     depends_on:
       - al_app
     volumes:

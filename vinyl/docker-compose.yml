@@ -3,7 +3,7 @@ version: '2'
 services:
   vinyl_app:
     image: joene/discogssorter:latest
-    restart: unless-stopped
+    restart: always
     volumes:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro

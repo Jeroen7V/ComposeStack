@@ -3,7 +3,7 @@ version: '3.3'
 services:
   firefly_app:
     image: fireflyiii/core:latest
-    restart: unless-stopped
+    restart: always
     depends_on:
       - firefly_db
     env_file: .firefly.env
@@ -16,7 +16,7 @@ services:
       flame.icon: cash-multiple
   firefly_db:
     image: mariadb
-    restart: unless-stopped
+    restart: always
     environment:
       MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
       MYSQL_USER: ${MYSQL_USR}

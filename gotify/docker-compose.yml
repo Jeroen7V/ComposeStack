@@ -10,7 +10,7 @@ services:
     image: ghcr.io/gotify/server:latest
     volumes:
       - ${DATADIR}/gotify:/app/data
-    restart: unless-stopped
+    restart: always
     environment:
       GOTIFY_DEFAULTUSER_NAME: ${USR_USR}
       GOTIFY_DEFAULTUSER_PASS: ${USR_PWD}

@@ -10,7 +10,7 @@ services:
     image: louislam/uptime-kuma:latest
     volumes:
       - ${DATADIR}/app:/app/data
-    restart: unless-stopped
+    restart: always
     labels:
       flame.type: application
       flame.name: Uptime Kuma

@@ -3,7 +3,7 @@ version: '2.1'
 services:
   flame_app:
     image: pawelmalak/flame:latest
-    restart: unless-stopped
+    restart: always
     volumes:
     - ${DATADIR}/app/data:/app/data
     - /var/run/docker.sock:/var/run/docker.sock:ro

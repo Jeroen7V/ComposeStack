@@ -3,7 +3,7 @@ version: '2'
 services:
   planbordevaluatie:
     image: joene/planbordevaluatie:latest
-    restart: unless-stopped
+    restart: always
     ports:
       - ${PORT_PLANBORDEVALUATIE}:8000
     volumes:

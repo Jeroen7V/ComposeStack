@@ -12,10 +12,11 @@ services:
       - --providers.docker
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    restart: unless-stopped
+    restart: always
 
   traefik-forward-auth:
     image: thomseddon/traefik-forward-auth:2
+    restart: always
     environment:
       SECRET: ${SECRET}
       COOKIE_DOMAIN: ${DOMAIN}

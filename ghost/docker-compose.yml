@@ -10,7 +10,7 @@ services:
     image: ghost:4-alpine
     volumes:
       - ${DATADIR}/app:/var/lib/ghost/content
-    restart: unless-stopped
+    restart: always
     environment:
       url: ${APP_URL}
       database__client: sqlite3

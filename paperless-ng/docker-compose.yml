@@ -3,11 +3,11 @@ version: "3.4"
 services:
   paperless-broker:
     image: redis:6.0
-    restart: unless-stopped
+    restart: always
 
   paperless-db:
     image: postgres:13
-    restart: unless-stopped
+    restart: always
     volumes:
       - ${DATADIR}/db/data:/var/lib/postgresql/data
     environment:
@@ -19,7 +19,7 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
-    restart: unless-stopped
+    restart: always
     depends_on:
       - paperless-db
       - paperless-broker
