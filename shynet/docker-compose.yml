@@ -23,7 +23,7 @@ services:
       traefik.http.routers.shynet.middlewares: traefik-forward-auth
 
   shynet-db:
-    image: postgres:latest
+    image: postgres:13-alpine
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
