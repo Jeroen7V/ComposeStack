@@ -11,7 +11,7 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_DB=${POSTGRES_DATABASE}
   joplin_app:
-    image: joplin/server:2.2.8-beta
+    image: joplin/server:2
     depends_on:
       - joplin_db
     ports:
