@@ -26,6 +26,11 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PORT=5432
       - POSTGRES_HOST=joplin_db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "${JOPLIN_URL}/api/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     labels:
       flame.type: application
       flame.name: Joplin
