@@ -1,0 +1,20 @@
+version: '3.7'
+
+networks:
+  default:
+    external:
+      name: ${NETWORK}
+
+services:
+  openproject-app:
+    image: openproject/community:11
+    environment:
+    - SERVER_HOSTNAME=${APP_URL}
+    - SECRET_KEY_BASE=${APP_SECRET}
+    volumes:
+    - ${DATADIR}/app/pgdata:/var/openproject/pgdata
+    - ${DATADIR}/app/assets:/var/openproject/assets
+    labels:
+      traefik.enable: true
+      traefik.http.routers.openproject.rule: Host(`${APP_URL}`) || Host(`${APP2_URL}`)
+      traefik.http.services.openproject.loadbalancer.server.port: 80
