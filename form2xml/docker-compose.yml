@@ -1,0 +1,22 @@
+version: "3"
+
+networks:
+  default:
+    external:
+      name: npm_network
+
+services:
+  form2xml-app:
+    image: joene/form2xml:latest
+    volumes:
+      - ${DATADIR}/forms:/forms
+      - ${DATADIR}/downloads:/downloads
+    restart: always
+    labels:
+      flame.type: application
+      flame.name: Form2XML
+      flame.url: https://${APP_URL}
+      flame.icon: xml
+      traefik.enable: true
+      traefik.http.routers.form2xml.rule: Host(`${APP_URL}`)
+      traefik.http.services.form2xml.loadbalancer.server.port: 8228
