@@ -13,8 +13,11 @@ services:
     labels:
       flame.type: application
       flame.name: Vaultwarden
-      flame.url: ${APP_URL}
+      flame.url: https://${APP_URL}
       flame.icon: safe-square
+      traefik.enable: true
+      traefik.http.routers.vaultwarden.rule: Host(`${APP_URL}`) || Host(`${APP2_URL}`)
+      traefik.http.services.vaultwarden.loadbalancer.server.port: 80
 
 networks:
   default:

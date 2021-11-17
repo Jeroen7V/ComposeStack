@@ -12,7 +12,7 @@ services:
       - ${DATADIR}/app:/var/lib/ghost/content
     restart: always
     environment:
-      url: ${APP_URL}
+      url: https://${APP_URL}
       database__client: sqlite3
       useMinFiles: "true"
       compress: "true"
@@ -20,5 +20,8 @@ services:
     labels:
       flame.type: application
       flame.name: Ghost
-      flame.url: ${APP_URL}
+      flame.url: https://${APP_URL}
       flame.icon: typewriter
+      traefik.enable: true
+      traefik.http.routers.ghost.rule: Host(`${APP_URL}`) || Host(`${APP2_URL}`) || Host(`${APP3_URL}`)
+      traefik.http.services.ghost.loadbalancer.server.port: 2368

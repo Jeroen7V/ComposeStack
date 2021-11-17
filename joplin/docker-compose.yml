@@ -14,28 +14,24 @@ services:
     image: joplin/server:2
     depends_on:
       - joplin_db
-    ports:
-      - ${JOPLIN_PORT}:22300
     restart: always
     environment:
       - APP_PORT=22300
-      - APP_BASE_URL=${JOPLIN_URL}
+      - APP_BASE_URL=https://${APP_URL}
       - DB_CLIENT=pg
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DATABASE=${POSTGRES_DATABASE}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PORT=5432
       - POSTGRES_HOST=joplin_db
-    healthcheck:
-      test: ["CMD", "curl", "-f", "${JOPLIN_URL}/api/ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
     labels:
       flame.type: application
       flame.name: Joplin
-      flame.url: ${JOPLIN_URL}
+      flame.url: https://${APP_URL}
       flame.icon: notebook
+      traefik.enable: true
+      traefik.http.routers.joplin.rule: Host(`${APP_URL}`) || Host(`${APP2_URL}`)
+      traefik.http.services.joplin.loadbalancer.server.port: 22300
 
 networks:
   default:

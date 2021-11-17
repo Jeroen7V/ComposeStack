@@ -12,8 +12,11 @@ services:
     labels:
       flame.type: application
       flame.name: Firefly
-      flame.url: ${FF_URL}
+      flame.url: https://${APP_URL}
       flame.icon: cash-multiple
+      traefik.enable: true
+      traefik.http.routers.firefly.rule: Host(`${APP_URL}`)
+      traefik.http.services.firefly.loadbalancer.server.port: 8080
   firefly_db:
     image: mariadb
     restart: always

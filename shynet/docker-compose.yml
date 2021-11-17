@@ -13,14 +13,16 @@ services:
       DJANGO_SECRET_KEY: ${DJANGO_SECRET}
       TIME_ZONE: ${TZ}
       SHOW_SHYNET_VERSION: "False"
+    healthcheck:
+      disable: true
     labels:
       flame.type: application
       flame.name: Shynet
-      flame.url: ${SHY_URL}
+      flame.url: https://${APP_URL}
       flame.icon: home-analytics
-      traefik.http.routers.shynet.rule: Host(`${TRK_URL}`)
+      traefik.enable: true
+      traefik.http.routers.shynet.rule: Host(`${APP_URL}`)
       traefik.http.services.shynet.loadbalancer.server.port: 8080
-      traefik.http.routers.shynet.middlewares: traefik-forward-auth
 
   shynet-db:
     image: postgres:13-alpine

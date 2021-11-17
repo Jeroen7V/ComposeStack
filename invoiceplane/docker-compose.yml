@@ -10,6 +10,10 @@ services:
       - ${DIR_INVOICEPLANE}/app:/app:rw,delegated
       - ${DIR_INVOICEPLANE}/app/application/docker/nginx/site.conf:/opt/bitnami/nginx/conf/vhosts/site.conf:ro
     user: root
+    labels:
+      traefik.enable: true
+      traefik.http.routers.al.rule: Host(`${APP_URL}`)
+      traefik.http.services.al.loadbalancer.server.port: 8085
 
   al_app:
     #image: bitnami/php-fpm:7.3

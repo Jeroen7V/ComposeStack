@@ -6,14 +6,6 @@ networks:
       name: npm_network
 
 services:
-  traefik-app:
-    image: traefik:v2.2
-    command: 
-      - --providers.docker
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    restart: always
-
   traefik-forward-auth:
     image: thomseddon/traefik-forward-auth:2
     restart: always
@@ -26,7 +18,52 @@ services:
       PROVIDERS_OIDC_CLIENT_SECRET: ${CLIENT_SECRET}
       WHITELIST: ${WHITELIST}
     labels:
+      traefik.enable: true
+      traefik.http.routers.traefik-forward-auth.rule: Host(`${AUTH_URL}`)
+      traefik.http.routers.traefik-forward-auth.entrypoints: websecure
       traefik.http.services.traefik-forward-auth.loadbalancer.server.port: 4181
-      traefik.http.middlewares.traefik-forward-auth.forwardauth.address: ${AUTH_URL}
+      traefik.http.middlewares.traefik-forward-auth.forwardauth.address: https://${AUTH_URL}
       traefik.http.middlewares.traefik-forward-auth.forwardauth.authResponseHeaders: X-Forwarded-User
+
+  traefik-app:
+    image: traefik:v2.2
+    depends_on:
+      - traefik-forward-auth
+    environment:
+      GODADDY_API_KEY: ${GODADDY_API_KEY}
+      GODADDY_API_SECRET: ${GODADDY_API_SECRET}
+      GODADDY_POLLING_INTERVAL: 10
+      GODADDY_PROPAGATION_TIMEOUT: 180 
+    command: 
+      - --log.level=WARN
+      - --accessLog=false
+      - --api.insecure=true
+      - --providers.docker
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.forwardedHeaders.trustedIPs=172.26.0.0/16,172.80.0.0/24
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.websecure.forwardedHeaders.trustedIPs=172.26.0.0/16,172.80.0.0/24
+      - --entrypoints.websecure.http.tls.domains[0].main=${DOMAIN}
+      - --entrypoints.websecure.http.tls.domains[0].sans=*.${DOMAIN}
+      - --entrypoints.websecure.http.tls.certresolver=myresolver
+      - --certificatesresolvers.myresolver.acme.dnschallenge=true
+      - --certificatesresolvers.myresolver.acme.dnschallenge.provider=godaddy
+      - --certificatesresolvers.myresolver.acme.email=${MAIL_ADR}
+      - --certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${DATADIR}/app/letsencrypt:/letsencrypt
+    restart: always
+    labels:
+      traefik.enable: true
+      traefik.http.routers.traefik.rule: Host(`${APP_URL}`)
+      traefik.http.routers.traefik.entrypoints: websecure
+      traefik.http.routers.traefik.middlewares: traefik-forward-auth
+      traefik.http.services.traefik.loadbalancer.server.port: 8080
+
 

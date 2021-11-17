@@ -17,5 +17,8 @@ services:
     labels:
       flame.type: application
       flame.name: Gotify
-      flame.url: ${APP_URL}
+      flame.url: https://${APP_URL}
       flame.icon: bell
+      traefik.enable: true
+      traefik.http.routers.gotify.rule: Host(`${APP_URL}`)
+      traefik.http.services.gotify.loadbalancer.server.port: 80

@@ -46,9 +46,12 @@ services:
     labels:
       flame.type: application
       flame.name: Paperless
-      flame.url: ${APP_URL}
+      flame.url: https://${APP_URL}
       flame.icon: file-document-multiple
       com.centurylinklabs.watchtower.enable: "false"
+      traefik.enable: true
+      traefik.http.routers.paperless.rule: Host(`${APP_URL}`) || Host(`${APP2_URL}`)
+      traefik.http.services.paperless.loadbalancer.server.port: 8000
 
 networks:
   default:

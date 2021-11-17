@@ -12,6 +12,7 @@ services:
       flame.name: ${XTRA_NAMES}
       flame.url: ${XTRA_URLS}
       flame.icon: ${XTRA_ICONS}
+      traefik.enable: true
       traefik.http.routers.flame.rule: Host(`${APP_URL}`)
       traefik.http.services.flame.loadbalancer.server.port: 5005
       traefik.http.routers.flame.middlewares: traefik-forward-auth
