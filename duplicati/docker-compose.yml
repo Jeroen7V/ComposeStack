@@ -7,7 +7,7 @@ networks:
 
 services:
   duplicati:
-    image: ghcr.io/linuxserver/duplicati
+    image: lscr.io/linuxserver/duplicati
     environment:
     - TZ=${TIMEZONE}
     - PUID=0

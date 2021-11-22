@@ -7,7 +7,7 @@ networks:
 
 services:
   transmission:
-    image: linuxserver/transmission
+    image: lscr.io/linuxserver/transmission
     environment:
     - TZ=${TIMEZONE}
     - PGID=0
@@ -45,7 +45,7 @@ services:
 #        max-size: "1m"
 
   jackett:
-    image: linuxserver/jackett
+    image: lscr.io/linuxserver/jackett
     restart: unless-stopped
     environment:
     - TZ=${TIMEZONE}
@@ -60,7 +60,7 @@ services:
         max-size: "1m"
 
   sonarr:
-    image: linuxserver/sonarr
+    image: lscr.io/linuxserver/sonarr
     restart: unless-stopped
     environment:
     - TZ=${TIMEZONE}
@@ -76,7 +76,7 @@ services:
         max-size: "1m"
 
   radarr:
-    image: linuxserver/radarr
+    image: lscr.io/linuxserver/radarr
     restart: unless-stopped
     environment:
     - TZ=${TIMEZONE}
@@ -93,7 +93,7 @@ services:
         max-size: "1m"
 
   bazarr:
-    image: linuxserver/bazarr
+    image: lscr.io/linuxserver/bazarr
     restart: unless-stopped
     environment:
     - TZ=${TIMEZONE}
