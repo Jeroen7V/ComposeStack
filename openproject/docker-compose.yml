@@ -18,3 +18,7 @@ services:
       traefik.enable: true
       traefik.http.routers.openproject.rule: Host(`${APP_URL}`) || Host(`${APP2_URL}`)
       traefik.http.services.openproject.loadbalancer.server.port: 80
+      flame.type: application
+      flame.name: OpenProject
+      flame.url: https://${APP_URL}
+      flame.icon: folder-table
