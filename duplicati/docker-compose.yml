@@ -19,3 +19,7 @@ services:
       driver: json-file
       options:
         max-size: "1m"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.duplicati.rule: Host(`duplicati.${DOMAIN}`)
+      traefik.http.services.duplicati.loadbalancer.server.port: 8200
