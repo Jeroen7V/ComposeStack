@@ -17,6 +17,10 @@ services:
       useMinFiles: "true"
       compress: "true"
       imageOptimization: "true"
+      mail__transport: SMTP
+      mail__options__host: ${MAIL_HOST}
+      mail__options__port: ${MAIL_PORT}
+      mail__options_secure: ${MAIL_SECURE}
     labels:
       flame.type: application
       flame.name: Ghost
