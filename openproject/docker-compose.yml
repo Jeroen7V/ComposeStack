@@ -7,7 +7,7 @@ networks:
 
 services:
   openproject-app:
-    image: openproject/community:11
+    image: openproject/community:12
     environment:
     - SERVER_HOSTNAME=${APP_URL}
     - SECRET_KEY_BASE=${APP_SECRET}
