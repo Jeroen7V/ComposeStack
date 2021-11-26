@@ -19,6 +19,10 @@ services:
       driver: json-file
       options:
         max-size: "1m"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.transmission.rule: Host(`transmission.${DOMAIN}`)
+      traefik.http.services.transmission.loadbalancer.server.port: 80
 
 #  plex:
 #    image: plexinc/pms-docker
@@ -58,6 +62,10 @@ services:
       driver: json-file
       options:
         max-size: "1m"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.jackett.rule: Host(`jackett.${DOMAIN}`)
+      traefik.http.services.jackett.loadbalancer.server.port: 80
 
   sonarr:
     image: lscr.io/linuxserver/sonarr
@@ -74,6 +82,10 @@ services:
       driver: json-file
       options:
         max-size: "1m"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.sonarr.rule: Host(`sonarr.${DOMAIN}`)
+      traefik.http.services.sonarr.loadbalancer.server.port: 80
 
   radarr:
     image: lscr.io/linuxserver/radarr
@@ -91,6 +103,10 @@ services:
       driver: json-file
       options:
         max-size: "1m"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.radarr.rule: Host(`radarr.${DOMAIN}`)
+      traefik.http.services.radarr.loadbalancer.server.port: 80
 
   bazarr:
     image: lscr.io/linuxserver/bazarr
@@ -107,6 +123,10 @@ services:
       driver: json-file
       options:
         max-size: "1m"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.bazarr.rule: Host(`bazarr.${DOMAIN}`)
+      traefik.http.services.bazarr.loadbalancer.server.port: 80
 
   podgrab:
     image: akhilrex/podgrab
@@ -120,6 +140,10 @@ services:
       driver: json-file
       options:
         max-size: "1m"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.podgrab.rule: Host(`podgrab.${DOMAIN}`)
+      traefik.http.services.podgrab.loadbalancer.server.port: 8080
 
   jellyfin:
     image: jellyfin/jellyfin:latest
@@ -135,3 +159,11 @@ services:
       - ${DIR_SPORTS}:/media/sports:ro
     devices:
       - /dev/dri:/dev/dri
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.jellyfin.rule: Host(`jellyfin.${DOMAIN}`)
+      traefik.http.services.jellyfin.loadbalancer.server.port: 80
