@@ -9,8 +9,7 @@ services:
   form2xml-app:
     image: joene/form2xml:latest
     volumes:
-      - ${DATADIR}/forms:/forms
-      - ${DATADIR}/downloads:/downloads
+      - ${DATADIR}/db:/src/db
     restart: always
     labels:
       flame.type: application
