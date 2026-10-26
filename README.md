@@ -35,6 +35,11 @@ ip route add 192.168.1.64/26 dev services
   `192.168.1.64/26` lets the host talk to the containers (the usual macvlan
   limitation workaround).
 - Container addresses come from `192.168.1.64/26` (`192.168.1.64` – `192.168.1.127`).
+- These host commands are **not persistent**: they must be re-applied at every
+  boot (or automated with a systemd unit). If the host suddenly can't reach
+  container IPs, this is the first thing to check.
+- The `<app>.int.krokantekrab.be` routes rely on a wildcard DNS record
+  (`*.int.krokantekrab.be` → `192.168.1.84`, NPM) existing in the LAN DNS.
 
 The `services` network is created outside of Compose and referenced as
 `external: true` in every stack. Each stack picks the network name up from
@@ -70,12 +75,11 @@ backends.
 | `homeassist` | mqtt (mosquitto), music-assistant                 | 75, 76                           |
 | `netbird`    | netbird routing peer, adguard-home                | 85, 86                           |
 | `hermes`     | hermes agent                                      | 87                               |
-| `form2xml`   | form2xml                                          | legacy (npm_network)             |
-| `vinyl`      | vinyl sorter                                      | legacy (npm_network)             |
 
-Reverse proxying is handled by Nginx Proxy Manager (`npm/`): containers are
-labeled with `npm.proxy.*` labels and `npm_docker_sync` registers them
-automatically.
+Reverse proxying is handled by Nginx Proxy Manager (`npm/`): exposed
+containers are labeled with `npm.proxy.*` labels (rule 9 under Conventions)
+and `npm_docker_sync` watches for them, creating the route and attaching the
+`*.int.krokantekrab.be` wildcard certificate automatically.
 
 ## Deploying
 
@@ -121,12 +125,27 @@ variables use the array form and still need converting).
 7. **Secrets** — never in `docker-compose.yml`, only in `.env`. `.env` files
    are gitignored and must stay out of git.
 8. **Linting** — all YAML files must pass `yamllint`.
+9. **Reverse proxy labels** — every exposed container carries the labels that
+   `npm_docker_sync` uses to register it with Nginx Proxy Manager
+   automatically. The route is `<app-name>.int.krokantekrab.be` (use a route
+   name if it differs from the app name), terminated with the wildcard
+   certificate (id 8):
+   ```yaml
+   labels:
+     npm.proxy.domains: grimmory.int.krokantekrab.be
+     npm.proxy.port: "6060"
+     npm.proxy.ssl.certificate.id: "8"
+   ```
+   `npm.proxy.port` is the port the container itself listens on; NPM reaches
+   the container over the macvlan network.
 
 Additionally standard:
 
 - `restart: unless-stopped` on every service.
 - Persistent data goes under `/opt/composition/appdata/<service>`, referenced
   through `${DIR_CONFIG}` (or an equivalent directory variable) from `.env`.
+- Services running as a non-root user must have their `appdata/<service>`
+  directory owned by that UID/GID, or they crash-loop on start.
 - Every stack directory contains a committed `.env.example` listing all
   variables the compose file expects, with placeholder (non-secret) values.
   `.env` itself is never committed, so a fresh clone can be rebuilt from the
@@ -153,5 +172,3 @@ getting flagged — clean history is the only real fix for that.
   password and the full IP plan.
 - `appdata/` is gitignored: it is live data (databases, caches, letsencrypt
   certificates), not configuration.
-- `form2xml/` and `vinyl/` predate the macvlan setup (they reference an old
-  `npm_network` and Traefik labels) and still need to be migrated.
