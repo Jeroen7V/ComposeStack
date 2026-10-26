@@ -1,74 +1,49 @@
-version: '2.4'
-
 networks:
   default:
-    external:
-      name: ${NETWORK}
+    external: true
+    name: ${NETWORK}
+  host:
+    external: true
 
 services:
   transmission:
-    image: lscr.io/linuxserver/transmission
+    image: lscr.io/linuxserver/transmission:latest
+    restart: unless-stopped
     environment:
     - TZ=${TIMEZONE}
     - PGID=0
     - PUID=0
     volumes:
-    - ${DIR_DOWNLOADS}:/downloads
-    - ${DIR_CONFIG}/transmission/config:/config
+    - ${DIR_DOWNLOADS_COMPLETE}:/downloads/complete:rw
+    - ${DIR_DOWNLOADS_INCOMPLETE}:/downloads/incomplete:rw
+    - ${DIR_CONFIG}/transmission/config:/config:rw
     logging:
       driver: json-file
       options:
         max-size: "1m"
-    labels:
-      traefik.enable: true
-      traefik.http.routers.transmission.rule: Host(`transmission.${DOMAIN}`)
-      traefik.http.services.transmission.loadbalancer.server.port: 80
+    networks:
+      default:
+        ipv4_address: ${IP_TRANSMISSION}
 
-#  plex:
-#    image: plexinc/pms-docker
-#    restart: unless-stopped
-#    environment:
-#    - VERSION=latest
-#    - PUID=0
-#    - PGID=0
-#    - TZ=${TIMEZONE}
-#    - PLEX_CLAIM=${PLEX_CLAIM}
-#    - PLEX_UID=0
-#    - PLEX_GID=0
-#    - ADVERTISE_IP=http://${IP_PLEX}:32400
-#    volumes:
-#    - /etc/localtime:/etc/localtime:ro
-#    - ${DIR_CONFIG}/plex/config:/config
-#    - ${DIR_FILMS}:/data/movies:ro
-#    - ${DIR_SERIES}:/data/tvshows:ro
-#    #- ${DIR_MUSIC}:/data/music:ro
-#    - ${DIR_SPORTS}:/data/sports:ro
-#    logging:
-#      driver: json-file
-#      options:
-#        max-size: "1m"
-
-  jackett:
-    image: lscr.io/linuxserver/jackett
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
     restart: unless-stopped
     environment:
     - TZ=${TIMEZONE}
     - PUID=0
     - PGID=0
     volumes:
-    - ${DIR_CONFIG}/jackett/config:/config
-    - ${DIR_DOWNLOADS}:/downloads
+    - ${DIR_CONFIG}/prowlarr/config:/config
     logging:
       driver: json-file
       options:
         max-size: "1m"
-    labels:
-      traefik.enable: true
-      traefik.http.routers.jackett.rule: Host(`jackett.${DOMAIN}`)
-      traefik.http.services.jackett.loadbalancer.server.port: 80
+    networks:
+      default:
+        ipv4_address: ${IP_PROWLARR}
 
   sonarr:
-    image: lscr.io/linuxserver/sonarr
+    image: lscr.io/linuxserver/sonarr:latest
     restart: unless-stopped
     environment:
     - TZ=${TIMEZONE}
@@ -77,18 +52,18 @@ services:
     volumes:
     - ${DIR_CONFIG}/sonarr/config:/config
     - ${DIR_SERIES}:/tv
-    - ${DIR_DOWNLOADS}:/downloads
+    - ${DIR_DOWNLOADS_COMPLETE}:/downloads/complete
+    - ${DIR_DOWNLOADS_INCOMPLETE}:/downloads/incomplete
     logging:
       driver: json-file
       options:
         max-size: "1m"
-    labels:
-      traefik.enable: true
-      traefik.http.routers.sonarr.rule: Host(`sonarr.${DOMAIN}`)
-      traefik.http.services.sonarr.loadbalancer.server.port: 80
+    networks:
+      default:
+        ipv4_address: ${IP_SONARR}
 
   radarr:
-    image: lscr.io/linuxserver/radarr
+    image: lscr.io/linuxserver/radarr:latest
     restart: unless-stopped
     environment:
     - TZ=${TIMEZONE}
@@ -98,18 +73,18 @@ services:
     - ${DIR_CONFIG}/radarr/config:/config
     - ${DIR_FILMS}:/movies
     - ${DIR_SPORTS}:/sports
-    - ${DIR_DOWNLOADS}:/downloads
+    - ${DIR_DOWNLOADS_COMPLETE}:/downloads/complete
+    - ${DIR_DOWNLOADS_INCOMPLETE}:/downloads/incomplete
     logging:
       driver: json-file
       options:
         max-size: "1m"
-    labels:
-      traefik.enable: true
-      traefik.http.routers.radarr.rule: Host(`radarr.${DOMAIN}`)
-      traefik.http.services.radarr.loadbalancer.server.port: 80
+    networks:
+      default:
+        ipv4_address: ${IP_RADARR}
 
   bazarr:
-    image: lscr.io/linuxserver/bazarr
+    image: lscr.io/linuxserver/bazarr:latest
     restart: unless-stopped
     environment:
     - TZ=${TIMEZONE}
@@ -123,37 +98,19 @@ services:
       driver: json-file
       options:
         max-size: "1m"
-    labels:
-      traefik.enable: true
-      traefik.http.routers.bazarr.rule: Host(`bazarr.${DOMAIN}`)
-      traefik.http.services.bazarr.loadbalancer.server.port: 80
-
-  podgrab:
-    image: akhilrex/podgrab
-    restart: unless-stopped
-    environment:
-      CHECK_FREQUENCY: 240
-    volumes:
-    - ${DIR_CONFIG}/podgrab/config:/config
-    - ${DIR_PODCASTS}:/assets
-    logging:
-      driver: json-file
-      options:
-        max-size: "1m"
-    labels:
-      traefik.enable: true
-      traefik.http.routers.podgrab.rule: Host(`podgrab.${DOMAIN}`)
-      traefik.http.services.podgrab.loadbalancer.server.port: 8080
+    networks:
+      default:
+        ipv4_address: ${IP_BAZARR}
 
   jellyfin:
-    image: jellyfin/jellyfin:latest
+    image: ghcr.io/jellyfin/jellyfin:latest
+    restart: unless-stopped
     environment:
-      JELLYFIN_PublishedServerUrl: ${URL_JELLYFIN}
+      JELLYFIN_PublishedServerUrl: http://${IP_JELLYFIN}:8096
     volumes:
       - ${DIR_CONFIG}/jellyfin/config:/config
       - ${DIR_CONFIG}/jellyfin/cache:/cache
       - ${DIR_MUSIC}:/media/music:ro
-      - ${DIR_PODCASTS}:/media/podcasts:ro
       - ${DIR_FILMS}:/media/movies:ro
       - ${DIR_SERIES}:/media/tvshows:ro
       - ${DIR_SPORTS}:/media/sports:ro
@@ -163,7 +120,67 @@ services:
       driver: json-file
       options:
         max-size: "1m"
-    labels:
-      traefik.enable: true
-      traefik.http.routers.jellyfin.rule: Host(`jellyfin.${DOMAIN}`)
-      traefik.http.services.jellyfin.loadbalancer.server.port: 80
+    networks:
+      default:
+        ipv4_address: ${IP_JELLYFIN}
+
+  tdarr:
+    image: ghcr.io/haveagitgat/tdarr:latest
+    restart: unless-stopped
+    environment:
+      - TZ=${TIMEZONE}
+      - PUID=0
+      - PGID=0
+      - serverIP=0.0.0.0
+      - serverPort=8266
+      - webUIPort=8265
+      - internalNode=true
+      - inContainer=true
+      - nodeName=Wairuha
+      - ffmpegVersion=6
+    volumes:
+      - ${DIR_CONFIG}/tdarr/server:/app/server
+      - ${DIR_CONFIG}/tdarr/configs:/app/configs
+      - ${DIR_CONFIG}/tdarr/logs:/app/logs
+      - ${DIR_CONFIG}/tdarr/transcode:/temp
+      # - ${DIR_TRANSCODE}:/temp
+      - ${DIR_FILMS}:/media/movies
+      - ${DIR_SERIES}:/media/tvshows
+    devices:
+      - /dev/dri:/dev/dri
+    networks:
+      default:
+        ipv4_address: ${IP_TDARR}
+
+#  subgen:
+#    image: mccloud/subgen
+#    restart: unless-stopped
+#    environment:
+#       - WHISPER_MODEL=medium
+#       - WHISPER_THREADS=2
+#       - PROCADDEDMEDIA=True
+#       - PROCMEDIAONPLAY=False
+#       - NAMESUBLANG=dut
+#       - SKIPIFINTERNALSUBLANG=dut
+#       #- PLEXTOKEN=plextoken
+#       #- PLEXSERVER=http://plexserver:32400
+#       - JELLYFINTOKEN=f8fd6c9a9cdd4e968320a67d151f0c23
+#       - JELLYFINSERVER=http://${IP_JELLYFIN}:8096
+#       - WEBHOOKPORT=9000
+#       - CONCURRENT_TRANSCRIPTIONS=1
+#       - WORD_LEVEL_HIGHLIGHT=False
+#       - DEBUG=False
+#       - USE_PATH_MAPPING=False
+#       #- PATH_MAPPING_FROM=/tv
+#       #- PATH_MAPPING_TO=/Volumes/TV
+#       - TRANSCRIBE_DEVICE=cpu
+#       - CLEAR_VRAM_ON_COMPLETE=True
+#       - MODEL_PATH=./models
+#       - UPDATE=False
+#       - APPEND=False
+#       - USE_MODEL_PROMPT=False
+#       # - CUSTOM_MODEL_PROMPT=
+#       - LRC_FOR_AUDIO_FILES=True
+#       - CUSTOM_REGROUP=default
+#    ports:
+#       - "9000:9000"
