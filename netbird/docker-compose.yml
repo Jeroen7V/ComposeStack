@@ -1,0 +1,66 @@
+networks:
+  default:
+    external: true
+    name: ${NETWORK}
+
+services:
+  netbird-rp:
+    image: netbirdio/netbird:latest
+    container_name: netbird-rp
+    hostname: netbird-rp
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+      - SYS_ADMIN
+      - SYS_RESOURCE
+    devices:
+      - /dev/net/tun
+    environment:
+      TZ: ${TZ}
+      NB_SETUP_KEY: ${NETBIRD_SETUP_KEY}
+      NB_WIREGUARD_PORT: "51820"
+      NB_DISABLE_UPNP: "true"
+    volumes:
+      - ${DIR_CONFIG}/netbird:/var/lib/netbird
+    healthcheck:
+      test: ["CMD", "netbird", "status"]
+      interval: 60s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    # no npm.proxy labels: WireGuard VPN endpoint, not an HTTP service
+    networks:
+      default:
+        ipv4_address: ${NETBIRD_IP}
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+
+  adguard-home:
+    image: adguard/adguardhome
+    container_name: adguard-home
+    hostname: adguard-home
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ}
+    volumes:
+      - ${DIR_CONFIG}/adguard/conf:/opt/adguardhome/conf
+      - ${DIR_CONFIG}/adguard/work:/opt/adguardhome/work
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:80/"]
+      interval: 60s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    networks:
+      default:
+        ipv4_address: ${ADGUARD_IP}
+    labels:
+      npm.proxy.domains: adguard.int.krokantekrab.be
+      npm.proxy.port: "80"
+      npm.proxy.ssl.certificate.id: "8"
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"

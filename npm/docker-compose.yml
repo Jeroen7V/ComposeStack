@@ -1,40 +1,57 @@
-version: '3'
+networks:
+  default:
+    name: ${NETWORK}
+    external: true
+
 services:
   npm_app:
-    image: 'jc21/nginx-proxy-manager:latest'
-    restart: always
-    ports:
-      - '80:80'
-      - '443:443'
-      - '81:81'
-    depends_on:
-      - npm_db
+    image: jc21/nginx-proxy-manager:2
+    container_name: npm_app
+    restart: unless-stopped
     environment:
-      DB_MYSQL_HOST: "npm_db"
-      DB_MYSQL_PORT: 3306
-      DB_MYSQL_USER: "${MYSQL_USER}"
-      DB_MYSQL_PASSWORD: "${MYSQL_PW}"
-      DB_MYSQL_NAME: "${MYSQL_DB}"
+      TZ: ${TZ}
     volumes:
       - ${DATADIR}/npm/data:/data
       - ${DATADIR}/npm/letsencrypt:/etc/letsencrypt
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:81/api/"]
+      interval: 60s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    networks:
+      default:
+        ipv4_address: ${NETWORK_ADDRESS}
     labels:
-      flame.type: application
-      flame.name: Nginx Proxy Manager
-      flame.url: ${NPM_URL}
-      flame.icon: server-security
-  npm_db:
-    image: 'jc21/mariadb-aria:latest'
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOTPW}"
-      MYSQL_DATABASE: "${MYSQL_DB}"
-      MYSQL_USER: "${MYSQL_USER}"
-      MYSQL_PASSWORD: "${MYSQL_PW}"
-    volumes:
-      - ${DATADIR}/db/data:/var/lib/mysql
+      npm.proxy.domains: npm.int.krokantekrab.be
+      npm.proxy.port: "81"
+      npm.proxy.ssl.certificate.id: "8"
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
 
-networks:
-  default:
-    external:
-      name: ${NETWORK}
+  npm_docker_sync:
+    image: ghcr.io/redth/npm-docker-sync:latest
+    container_name: npm_docker_sync
+    restart: unless-stopped
+    depends_on:
+      npm_app:
+        condition: service_healthy
+    environment:
+      TZ: ${TZ}
+      DOCKER_HOST: unix:///var/run/docker.sock
+      NPM_URL: http://npm_app:81
+      NPM_EMAIL: ${NPM_EMAIL}
+      NPM_PASSWORD: ${NPM_PASSWORD}
+      NPM_CONTAINER_NAME: npm_app
+      NPM_PROXY_SSL_FORCE: "true"
+      NPM_PROXY_HSTS: "true"
+      NPM_PROXY_HSTS_SUBDOMAINS: "true"
+      NPM_PROXY_WEBSOCKETS: "true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"

@@ -1,169 +1,227 @@
-version: '2.4'
-
 networks:
   default:
-    external:
-      name: ${NETWORK}
+    external: true
+    name: ${NETWORK}
 
 services:
   transmission:
-    image: lscr.io/linuxserver/transmission
-    environment:
-    - TZ=${TIMEZONE}
-    - PGID=0
-    - PUID=0
-    volumes:
-    - ${DIR_DOWNLOADS}:/downloads
-    - ${DIR_CONFIG}/transmission/config:/config
-    logging:
-      driver: json-file
-      options:
-        max-size: "1m"
-    labels:
-      traefik.enable: true
-      traefik.http.routers.transmission.rule: Host(`transmission.${DOMAIN}`)
-      traefik.http.services.transmission.loadbalancer.server.port: 80
-
-#  plex:
-#    image: plexinc/pms-docker
-#    restart: unless-stopped
-#    environment:
-#    - VERSION=latest
-#    - PUID=0
-#    - PGID=0
-#    - TZ=${TIMEZONE}
-#    - PLEX_CLAIM=${PLEX_CLAIM}
-#    - PLEX_UID=0
-#    - PLEX_GID=0
-#    - ADVERTISE_IP=http://${IP_PLEX}:32400
-#    volumes:
-#    - /etc/localtime:/etc/localtime:ro
-#    - ${DIR_CONFIG}/plex/config:/config
-#    - ${DIR_FILMS}:/data/movies:ro
-#    - ${DIR_SERIES}:/data/tvshows:ro
-#    #- ${DIR_MUSIC}:/data/music:ro
-#    - ${DIR_SPORTS}:/data/sports:ro
-#    logging:
-#      driver: json-file
-#      options:
-#        max-size: "1m"
-
-  jackett:
-    image: lscr.io/linuxserver/jackett
+    image: lscr.io/linuxserver/transmission:latest
+    container_name: transmission
     restart: unless-stopped
     environment:
-    - TZ=${TIMEZONE}
-    - PUID=0
-    - PGID=0
+      TZ: ${TIMEZONE}
+      PUID: "0"
+      PGID: "0"
     volumes:
-    - ${DIR_CONFIG}/jackett/config:/config
-    - ${DIR_DOWNLOADS}:/downloads
+      - ${DIR_DOWNLOADS_COMPLETE}:/downloads/complete:rw
+      - ${DIR_DOWNLOADS_INCOMPLETE}:/downloads/incomplete:rw
+      - ${DIR_CONFIG}/transmission/config:/config:rw
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/transmission/web/"]
+      interval: 60s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    networks:
+      default:
+        ipv4_address: ${IP_TRANSMISSION}
+    labels:
+      npm.proxy.domains: transmission.int.krokantekrab.be
+      npm.proxy.port: "80"
+      npm.proxy.ssl.certificate.id: "8"
     logging:
       driver: json-file
       options:
         max-size: "1m"
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    restart: unless-stopped
+    environment:
+      TZ: ${TIMEZONE}
+      PUID: "0"
+      PGID: "0"
+    volumes:
+      - ${DIR_CONFIG}/prowlarr/config:/config
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/ping"]
+      interval: 60s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    networks:
+      default:
+        ipv4_address: ${IP_PROWLARR}
     labels:
-      traefik.enable: true
-      traefik.http.routers.jackett.rule: Host(`jackett.${DOMAIN}`)
-      traefik.http.services.jackett.loadbalancer.server.port: 80
+      npm.proxy.domains: prowlarr.int.krokantekrab.be
+      npm.proxy.port: "80"
+      npm.proxy.ssl.certificate.id: "8"
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
 
   sonarr:
-    image: lscr.io/linuxserver/sonarr
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
     restart: unless-stopped
     environment:
-    - TZ=${TIMEZONE}
-    - PUID=0
-    - PGID=0
+      TZ: ${TIMEZONE}
+      PUID: "0"
+      PGID: "0"
     volumes:
-    - ${DIR_CONFIG}/sonarr/config:/config
-    - ${DIR_SERIES}:/tv
-    - ${DIR_DOWNLOADS}:/downloads
+      - ${DIR_CONFIG}/sonarr/config:/config
+      - ${DIR_SERIES}:/tv
+      - ${DIR_DOWNLOADS_COMPLETE}:/downloads/complete
+      - ${DIR_DOWNLOADS_INCOMPLETE}:/downloads/incomplete
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/ping"]
+      interval: 60s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    networks:
+      default:
+        ipv4_address: ${IP_SONARR}
+    labels:
+      npm.proxy.domains: sonarr.int.krokantekrab.be
+      npm.proxy.port: "80"
+      npm.proxy.ssl.certificate.id: "8"
     logging:
       driver: json-file
       options:
         max-size: "1m"
-    labels:
-      traefik.enable: true
-      traefik.http.routers.sonarr.rule: Host(`sonarr.${DOMAIN}`)
-      traefik.http.services.sonarr.loadbalancer.server.port: 80
 
   radarr:
-    image: lscr.io/linuxserver/radarr
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
     restart: unless-stopped
     environment:
-    - TZ=${TIMEZONE}
-    - PUID=0
-    - PGID=0
+      TZ: ${TIMEZONE}
+      PUID: "0"
+      PGID: "0"
     volumes:
-    - ${DIR_CONFIG}/radarr/config:/config
-    - ${DIR_FILMS}:/movies
-    - ${DIR_SPORTS}:/sports
-    - ${DIR_DOWNLOADS}:/downloads
+      - ${DIR_CONFIG}/radarr/config:/config
+      - ${DIR_FILMS}:/movies
+      - ${DIR_SPORTS}:/sports
+      - ${DIR_DOWNLOADS_COMPLETE}:/downloads/complete
+      - ${DIR_DOWNLOADS_INCOMPLETE}:/downloads/incomplete
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/ping"]
+      interval: 60s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    networks:
+      default:
+        ipv4_address: ${IP_RADARR}
+    labels:
+      npm.proxy.domains: radarr.int.krokantekrab.be
+      npm.proxy.port: "80"
+      npm.proxy.ssl.certificate.id: "8"
     logging:
       driver: json-file
       options:
         max-size: "1m"
-    labels:
-      traefik.enable: true
-      traefik.http.routers.radarr.rule: Host(`radarr.${DOMAIN}`)
-      traefik.http.services.radarr.loadbalancer.server.port: 80
 
   bazarr:
-    image: lscr.io/linuxserver/bazarr
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
     restart: unless-stopped
     environment:
-    - TZ=${TIMEZONE}
-    - PUID=0
-    - PGID=0
+      TZ: ${TIMEZONE}
+      PUID: "0"
+      PGID: "0"
     volumes:
-    - ${DIR_CONFIG}/bazarr/config:/config
-    - ${DIR_FILMS}:/movies
-    - ${DIR_SERIES}:/tv
+      - ${DIR_CONFIG}/bazarr/config:/config
+      - ${DIR_FILMS}:/movies
+      - ${DIR_SERIES}:/tv
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      interval: 60s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    networks:
+      default:
+        ipv4_address: ${IP_BAZARR}
+    labels:
+      npm.proxy.domains: bazarr.int.krokantekrab.be
+      npm.proxy.port: "80"
+      npm.proxy.ssl.certificate.id: "8"
     logging:
       driver: json-file
       options:
         max-size: "1m"
-    labels:
-      traefik.enable: true
-      traefik.http.routers.bazarr.rule: Host(`bazarr.${DOMAIN}`)
-      traefik.http.services.bazarr.loadbalancer.server.port: 80
-
-  podgrab:
-    image: akhilrex/podgrab
-    restart: unless-stopped
-    environment:
-      CHECK_FREQUENCY: 240
-    volumes:
-    - ${DIR_CONFIG}/podgrab/config:/config
-    - ${DIR_PODCASTS}:/assets
-    logging:
-      driver: json-file
-      options:
-        max-size: "1m"
-    labels:
-      traefik.enable: true
-      traefik.http.routers.podgrab.rule: Host(`podgrab.${DOMAIN}`)
-      traefik.http.services.podgrab.loadbalancer.server.port: 8080
 
   jellyfin:
-    image: jellyfin/jellyfin:latest
+    image: ghcr.io/jellyfin/jellyfin:latest
+    container_name: jellyfin
+    restart: unless-stopped
     environment:
-      JELLYFIN_PublishedServerUrl: ${URL_JELLYFIN}
+      TZ: ${TIMEZONE}
+      JELLYFIN_PublishedServerUrl: http://${IP_JELLYFIN}:8096
     volumes:
       - ${DIR_CONFIG}/jellyfin/config:/config
       - ${DIR_CONFIG}/jellyfin/cache:/cache
       - ${DIR_MUSIC}:/media/music:ro
-      - ${DIR_PODCASTS}:/media/podcasts:ro
       - ${DIR_FILMS}:/media/movies:ro
       - ${DIR_SERIES}:/media/tvshows:ro
       - ${DIR_SPORTS}:/media/sports:ro
+    # healthcheck is built into the image (verified passing)
     devices:
       - /dev/dri:/dev/dri
+    networks:
+      default:
+        ipv4_address: ${IP_JELLYFIN}
+    labels:
+      npm.proxy.domains: jellyfin.int.krokantekrab.be
+      npm.proxy.port: "8096"
+      npm.proxy.ssl.certificate.id: "8"
     logging:
       driver: json-file
       options:
         max-size: "1m"
+
+  tdarr:
+    image: ghcr.io/haveagitgat/tdarr:latest
+    container_name: tdarr
+    restart: unless-stopped
+    environment:
+      TZ: ${TIMEZONE}
+      PUID: "0"
+      PGID: "0"
+      serverIP: "0.0.0.0"
+      serverPort: "8266"
+      webUIPort: "8265"
+      internalNode: "true"
+      inContainer: "true"
+      nodeName: Wairuha
+      ffmpegVersion: "6"
+    volumes:
+      - ${DIR_CONFIG}/tdarr/server:/app/server
+      - ${DIR_CONFIG}/tdarr/configs:/app/configs
+      - ${DIR_CONFIG}/tdarr/logs:/app/logs
+      - ${DIR_CONFIG}/tdarr/transcode:/temp
+      - ${DIR_FILMS}:/media/movies
+      - ${DIR_SERIES}:/media/tvshows
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8265/"]
+      interval: 60s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    devices:
+      - /dev/dri:/dev/dri
+    networks:
+      default:
+        ipv4_address: ${IP_TDARR}
     labels:
-      traefik.enable: true
-      traefik.http.routers.jellyfin.rule: Host(`jellyfin.${DOMAIN}`)
-      traefik.http.services.jellyfin.loadbalancer.server.port: 80
+      npm.proxy.domains: tdarr.int.krokantekrab.be
+      npm.proxy.port: "8265"
+      npm.proxy.ssl.certificate.id: "8"
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"

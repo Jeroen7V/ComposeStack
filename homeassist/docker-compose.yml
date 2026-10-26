@@ -1,0 +1,37 @@
+networks:
+  default:
+    external: true
+    name: ${NETWORK}
+
+services:
+  music-assistant:
+    image: ghcr.io/music-assistant/server:latest
+    container_name: music-assistant
+    restart: unless-stopped
+    environment:
+      LOG_LEVEL: info
+      TZ: ${TIMEZONE}
+    volumes:
+      - ${DIR_CONFIG}/music-assistant/data:/data
+      - ${DIR_MUSIC}:/media/music:ro
+    healthcheck:
+      test:
+        - CMD
+        - python3
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://localhost:8095')
+      interval: 60s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    networks:
+      default:
+        ipv4_address: ${IP_MA}
+    labels:
+      npm.proxy.domains: ma.int.krokantekrab.be
+      npm.proxy.port: "8095"
+      npm.proxy.ssl.certificate.id: "8"
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"

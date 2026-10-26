@@ -1,0 +1,66 @@
+networks:
+  default:
+    external: true
+    name: ${NETWORK}
+
+services:
+  grimmory:
+    image: grimmory/grimmory:v3.5
+    container_name: grimmory
+    environment:
+      USER_ID: ${APP_USER_ID}
+      GROUP_ID: ${APP_GROUP_ID}
+      TZ: ${TZ}
+      DATABASE_URL: jdbc:mariadb://mariadb:3306/${MYSQL_DATABASE}
+      DATABASE_USERNAME: ${DB_USER}
+      DATABASE_PASSWORD: ${DB_PASSWORD}
+      GRIMMORY_PORT: ${GRIMMORY_PORT}
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    volumes:
+      - ${DIR_CONFIG}/grimmory/data:/app/data
+      - ${DIR_BOOKS}/ebooks:/books
+      - ${DIR_BOOKS}/bookdrop:/bookdrop
+    healthcheck:
+      test: wget -q -O - http://localhost:${GRIMMORY_PORT}/api/v1/healthcheck
+      interval: 60s
+      retries: 5
+      start_period: 60s
+      timeout: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+    restart: unless-stopped
+    networks:
+      default:
+        ipv4_address: ${GRIMMORY_IP}
+    labels:
+      npm.proxy.domains: grimmory.int.krokantekrab.be
+      npm.proxy.port: ${GRIMMORY_PORT}
+      npm.proxy.ssl.certificate.id: "8"
+
+  mariadb:
+    image: lscr.io/linuxserver/mariadb:11.4.5
+    container_name: mariadb
+    environment:
+      PUID: ${DB_USER_ID}
+      PGID: ${DB_GROUP_ID}
+      TZ: ${TZ}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ${DIR_CONFIG}/grimmory/mariadb/config:/config
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"

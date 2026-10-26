@@ -1,0 +1,59 @@
+networks:
+  default:
+    external: true
+    name: ${NETWORK}
+
+services:
+  hermes:
+    image: nousresearch/hermes-agent:latest
+    container_name: hermes
+    restart: unless-stopped
+    environment:
+      HERMES_UID: ${HERMES_UID}
+      HERMES_GID: ${HERMES_GID}
+      TZ: ${TZ}
+      API_SERVER_HOST: 0.0.0.0
+      API_SERVER_KEY: ${API_SERVER_KEY}
+      # HERMES_DASHBOARD_HOST: ${HERMES_IP}
+      HERMES_DASHBOARD: 1
+      HERMES_DASHBOARD_BASIC_AUTH_USERNAME: ${HERMES_USR}
+      HERMES_DASHBOARD_BASIC_AUTH_PASSWORD: ${HERMES_PWD}
+      MISTRAL_API_KEY: ${MISTRAL_API_KEY}
+      DEFAULT_LLM_PROVIDER: ${DEFAULT_LLM_PROVIDER}
+      DEFAULT_LLM_MODEL: ${DEFAULT_LLM_MODEL}
+    volumes:
+      - ${DIR_CONFIG}/hermes/data:/opt/data
+    networks:
+      default:
+        ipv4_address: ${HERMES_IP}
+    labels:
+      npm.proxy.domains: hermes.int.krokantekrab.be
+      npm.proxy.port: "9119"
+      npm.proxy.ssl.certificate.id: "8"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8642/health"]
+      interval: 60s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+    command: ["gateway", "run"]
+
+#  hermes-dashboard:
+#    image: nousresearch/hermes-agent:latest
+#    container_name: hermes-dashboard
+#    restart: unless-stopped
+#    depends_on:
+#      - hermes
+#    environment:
+#      HERMES_UID: ${HERMES_UID}
+#      HERMES_GID: ${HERMES_GID}
+#    volumes:
+#      - ${DIR_CONFIG}/hermes/data:/opt/data
+#    networks:
+#      default:
+#        ipv4_address: ${HERMES_DASHBOARD_IP}
+#    command: ["dashboard", "--host", "0.0.0.0", "--no-open"]

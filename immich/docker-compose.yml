@@ -1,0 +1,93 @@
+# Based on the upstream immich release compose file; image references are
+# pinned via .env (IMAGE_DB, IMAGE_REDIS). env_file passes the .env variables
+# to the immich containers, as upstream expects.
+
+name: immich
+
+networks:
+  default:
+    external: true
+    name: ${NETWORK}
+
+services:
+  immich-server:
+    container_name: immich_server
+    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
+    volumes:
+      - ${UPLOAD_LOCATION}:/data:rw
+      - /etc/localtime:/etc/localtime:ro
+      - ${DIR_PHOTOS_DRIVE}:/mnt/media/jeroen-drive-PhotoBackup:ro
+      - ${DIR_PHOTOS_HOME}:/mnt/media/jeroen-home-Photos:ro
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_healthy
+      database:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      disable: false
+    devices:
+      - /dev/dri:/dev/dri
+    networks:
+      default:
+        ipv4_address: ${IMMICH_IP}
+    labels:
+      npm.proxy.domains: immich.int.krokantekrab.be
+      npm.proxy.port: "2283"
+      npm.proxy.ssl.certificate.id: "8"
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+
+  immich-machine-learning:
+    container_name: immich_machine_learning
+    image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
+    volumes:
+      - ${DIR_CONFIG}/immich/ml-cache:/cache
+    env_file:
+      - .env
+    restart: unless-stopped
+    healthcheck:
+      disable: false
+    devices:
+      - /dev/dri:/dev/dri
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+
+  redis:
+    container_name: immich_redis
+    image: ${IMAGE_REDIS}
+    environment:
+      TZ: ${TZ}
+    healthcheck:
+      test: redis-cli ping || exit 1
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+
+  database:
+    container_name: immich_postgres
+    image: ${IMAGE_DB}
+    environment:
+      TZ: ${TZ}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_DB: ${DB_DATABASE_NAME}
+      POSTGRES_INITDB_ARGS: --data-checksums
+    volumes:
+      - ${DB_DATA_LOCATION}:/var/lib/postgresql/data
+    shm_size: 128mb
+    restart: unless-stopped
+    healthcheck:
+      disable: false
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
