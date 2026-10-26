@@ -45,7 +45,7 @@ services:
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - ${DIR_CONFIG/grimmory/mariadb/config:/config
+      - ${DIR_CONFIG}/grimmory/mariadb/config:/config
     restart: unless-stopped
     healthcheck:
       test: [ "CMD", "mariadb-admin", "ping", "-h", "localhost" ]
