@@ -26,6 +26,20 @@ services:
     networks:
       default:
         ipv4_address: ${HERMES_IP}
+    labels:
+      npm.proxy.domains: hermes.int.krokantekrab.be
+      npm.proxy.port: "9119"
+      npm.proxy.ssl.certificate.id: "8"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8642/health"]
+      interval: 60s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
     command: ["gateway", "run"]
 
 #  hermes-dashboard:
