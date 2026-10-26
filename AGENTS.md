@@ -13,7 +13,6 @@ picture; this file is the rule set for changing anything in this repository.
   reads, with placeholder values. When adding a variable to a compose file,
   add it to `.env.example` too.
 - `appdata/` — live container data. gitignored. Never edit, never commit.
-- `network.txt` — host-side macvlan setup. Reference only.
 
 ## Hard rules for every compose file
 
@@ -85,7 +84,8 @@ picture; this file is the rule set for changing anything in this repository.
 
 - macvlan network `services` on the LAN. Usable container range:
   `192.168.1.64/26` (`192.168.1.64`–`192.168.1.127`); host side is
-  `192.168.1.10` (see `network.txt`).
+  `192.168.1.10` (host-side setup and boot persistence are documented in
+  `README.md`).
 - Static IPs are assigned in the stack `.env`, never hardcoded in the compose
   file.
 - Before adding a service with a static IP, grep the existing `.env` files and

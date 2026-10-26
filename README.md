@@ -11,7 +11,6 @@ Each subdirectory is an independent stack with its own `docker-compose.yml` and
 │   ├── .env              # secrets and stack variables (never committed)
 │   └── .env.example      # template with all variables, placeholder values
 ├── appdata/              # persistent container data, one folder per service (gitignored)
-├── network.txt           # host-side macvlan setup commands
 └── README.md / AGENTS.md
 ```
 
@@ -21,7 +20,7 @@ All services that need to be reachable from the LAN live on a macvlan network
 called `services`, so every exposed container gets its own IP address on the
 LAN subnet — no port publishing, no NAT.
 
-The host-side setup (run once per boot, see `network.txt`):
+The host-side setup (run once per boot):
 
 ```sh
 ip link add services link enp1s0 type macvlan mode bridge
@@ -35,11 +34,46 @@ ip route add 192.168.1.64/26 dev services
   `192.168.1.64/26` lets the host talk to the containers (the usual macvlan
   limitation workaround).
 - Container addresses come from `192.168.1.64/26` (`192.168.1.64` – `192.168.1.127`).
-- These host commands are **not persistent**: they must be re-applied at every
-  boot (or automated with a systemd unit). If the host suddenly can't reach
-  container IPs, this is the first thing to check.
+- These commands are **not persistent** — see "Persisting across reboots"
+  below. If the host suddenly can't reach container IPs, this is the first
+  thing to check.
 - The `<app>.int.krokantekrab.be` routes rely on a wildcard DNS record
   (`*.int.krokantekrab.be` → `192.168.1.84`, NPM) existing in the LAN DNS.
+
+### Persisting across reboots
+
+The macvlan device and its route disappear on every reboot. Make the setup a
+oneshot systemd unit on the host,
+`/etc/systemd/system/macvlan-services.service`:
+
+```ini
+[Unit]
+Description=macvlan "services" device for containers
+After=network.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/ip link add services link enp1s0 type macvlan mode bridge
+ExecStart=/usr/sbin/ip addr add 192.168.1.10/32 dev services
+ExecStart=/usr/sbin/ip link set services up
+ExecStart=/usr/sbin/ip route add 192.168.1.64/26 dev services
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Then enable it:
+
+```sh
+sudo systemctl daemon-reload
+sudo systemctl enable --now macvlan-services.service
+```
+
+`RemainAfterExit=yes` keeps the unit in the "active" state after the commands
+have run, so they execute exactly once per boot instead of on every start
+request. After a reboot, verify with `ip route show | grep 192.168.1.64` —
+if that line is missing, the host can't reach the containers.
 
 The `services` network is created outside of Compose and referenced as
 `external: true` in every stack. Each stack picks the network name up from

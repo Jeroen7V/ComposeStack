@@ -2,3 +2,4 @@
 *.env
 helper*.sh
 appdata
+network.txt

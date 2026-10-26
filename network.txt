@@ -1,4 +1,0 @@
-ip link add services link enp1s0 type macvlan mode bridge
-ip addr add 192.168.1.10/32 dev services
-ip link set services up
-ip route add 192.168.1.64/26 dev services
