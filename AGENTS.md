@@ -59,8 +59,9 @@ picture; this file is the rule set for changing anything in this repository.
    `${DIR_CONFIG}`-style variable from `.env`.
 9. Exposed containers set the `npm.proxy.*` labels so `npm_docker_sync`
    (in `npm/`) auto-registers the route with Nginx Proxy Manager. The domain
-   is `<APP_NAME|ROUTE_NAME>.int.krokantekrab.be`, terminated with the
-   wildcard certificate id 8:
+   is `<ROUTE_NAME>.int.krokantekrab.be`, terminated with the wildcard
+   certificate id 8. Keep route names short: use the app name, or a shorthand
+   for long names (e.g. `ma` instead of `music-assistant`):
    ```yaml
    labels:
      npm.proxy.domains: grimmory.int.krokantekrab.be
@@ -69,6 +70,12 @@ picture; this file is the rule set for changing anything in this repository.
    ```
    `npm.proxy.port` is the port the container listens on. Backend-only
    services get no labels.
+   - A manually created NPM proxy host on the same domain blocks the sync
+     (CONFLICT in its logs) — delete the manual host and restart
+     `npm_docker_sync` to trigger a full rescan.
+   - After changing labels, verify in `docker logs npm_docker_sync`
+     that the host was created/updated; the sync can miss a plain container
+     restart, and restarting the sync container forces a rescan.
 10. Services that run as a non-root user (UID/GID env vars, e.g.
     `HERMES_UID`) must have `appdata/<service>` owned by that UID/GID. A
     mismatch crash-loops the container with permission errors on start. Fix
@@ -119,29 +126,22 @@ cd <stack> && docker compose up -d      # recreates cleanly
   (`docker inspect -f '{{.RestartCount}}' <container>`).
 - The healthcheck actually passes: `docker inspect <container>` `.State.Health`
   shows recent exit code 0 — "defined in the compose file" is not enough.
-- Exposed services: `docker logs npm-npm_docker_sync-1` shows the proxy host
-  created for the `<app>.int.krokantekrab.be` domain.
-- `betterleaks dir <stack>` is clean, including `.env.example`.
+- Exposed services: `docker logs npm_docker_sync` shows the proxy host
+  created for the `<route-name>.int.krokantekrab.be` domain.
+- `betterleaks` is clean on the stack's committed files (`docker-compose.yml`,
+  `.env.example`). The gitignored `.env` is expected to contain real secrets,
+  so scan the committed files, not the whole directory.
 
 Never assume image behavior (listen ports, endpoints, run-as user, ownership):
 probe the running container first, then write it into the compose file.
 
 ## Migration status (as of 2026-10)
 
-Not all stacks follow the rules yet. Known offenders: `npm/` (`restart:
-always`, published ports, hardcoded TZ), `immich/` (hardcoded network name
-and IP, missing healthcheck config, published port), `homeassist/` (compose
-file uses `.yaml` extension instead of `.yml`, array-form environment,
-several services lack `container_name`, no healthchecks), `media/` (array-form
-environment, missing healthchecks, tdarr lacks container_name), `netbird/`
-(adguard-home lacks a healthcheck, trailing spaces). Exposed containers in
-`immich/`, `homeassist/`, `media/` and `netbird/` also lack the `npm.proxy.*`
-labels (rule 9). Error-level yamllint
-findings exist in `media/`, `homeassist/`, `immich/` and `netbird/` (line
-length, indentation, trailing spaces/blank lines). The legacy stacks
-`form2xml/` and `vinyl/` were removed from the working tree (deletion not yet
-committed). When asked to fix a stack, bring it into compliance with all
-rules above; don't leave half-migrated states.
+Aligned: `grimmory/`, `hermes/`, `immich/`, `homeassist/`, `netbird/`,
+`npm/`, `vinyl/`. Known offenders: `media/` (array-form environment, missing
+healthchecks, tdarr lacks container_name; error-level yamllint findings).
+When asked to fix a stack, bring it into compliance with all rules above;
+don't leave half-migrated states.
 
 When creating a new stack, copy the shape of `netbird/docker-compose.yml` and
 add a `.env.example`.

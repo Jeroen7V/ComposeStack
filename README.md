@@ -38,7 +38,8 @@ ip route add 192.168.1.64/26 dev services
   below. If the host suddenly can't reach container IPs, this is the first
   thing to check.
 - The `<app>.int.krokantekrab.be` routes rely on a wildcard DNS record
-  (`*.int.krokantekrab.be` → `192.168.1.84`, NPM) existing in the LAN DNS.
+  (`*.int.krokantekrab.be` → `192.168.1.84`, NPM) existing in the LAN DNS
+  (served by AdGuard Home at `192.168.1.86`, handed out via DHCP).
 
 ### Persisting across reboots
 
@@ -106,9 +107,10 @@ backends.
 | `immich`     | immich server, machine learning, redis, postgres  | 82 (server only)                |
 | `npm`        | nginx proxy manager, npm-docker-sync              | 84                               |
 | `grimmory`   | grimmory, mariadb                                  | 81 (grimmory only)               |
-| `homeassist` | mqtt (mosquitto), music-assistant                 | 75, 76                           |
+| `homeassist` | music-assistant                                   | 75                               |
 | `netbird`    | netbird routing peer, adguard-home                | 85, 86                           |
 | `hermes`     | hermes agent                                      | 87                               |
+| `vinyl`      | vinyl sorter (discogssorter)                      | 83                               |
 
 Reverse proxying is handled by Nginx Proxy Manager (`npm/`): exposed
 containers are labeled with `npm.proxy.*` labels (rule 9 under Conventions)
@@ -161,9 +163,10 @@ variables use the array form and still need converting).
 8. **Linting** — all YAML files must pass `yamllint`.
 9. **Reverse proxy labels** — every exposed container carries the labels that
    `npm_docker_sync` uses to register it with Nginx Proxy Manager
-   automatically. The route is `<app-name>.int.krokantekrab.be` (use a route
-   name if it differs from the app name), terminated with the wildcard
-   certificate (id 8):
+   automatically. The route is `<route-name>.int.krokantekrab.be`, terminated
+   with the wildcard certificate (id 8). Keep route names short: use the app
+   name, or a shorthand when it gets long (e.g. `ma` instead of
+   `music-assistant`):
    ```yaml
    labels:
      npm.proxy.domains: grimmory.int.krokantekrab.be

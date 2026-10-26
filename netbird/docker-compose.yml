@@ -22,10 +22,16 @@ services:
       NB_DISABLE_UPNP: "true"
     volumes:
       - ${DIR_CONFIG}/netbird:/var/lib/netbird
+    healthcheck:
+      test: ["CMD", "netbird", "status"]
+      interval: 60s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    # no npm.proxy labels: WireGuard VPN endpoint, not an HTTP service
     networks:
       default:
         ipv4_address: ${NETBIRD_IP}
-    # network_mode: host
     logging:
       driver: json-file
       options:
@@ -41,11 +47,20 @@ services:
     volumes:
       - ${DIR_CONFIG}/adguard/conf:/opt/adguardhome/conf
       - ${DIR_CONFIG}/adguard/work:/opt/adguardhome/work
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:80/"]
+      interval: 60s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
     networks:
       default:
         ipv4_address: ${ADGUARD_IP}
+    labels:
+      npm.proxy.domains: adguard.int.krokantekrab.be
+      npm.proxy.port: "80"
+      npm.proxy.ssl.certificate.id: "8"
     logging:
       driver: json-file
       options:
         max-size: "1m"
-    

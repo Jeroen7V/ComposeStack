@@ -1,22 +1,29 @@
+networks:
+  default:
+    name: ${NETWORK}
+    external: true
+
 services:
   npm_app:
-    image: 'jc21/nginx-proxy-manager:2'
+    image: jc21/nginx-proxy-manager:2
     container_name: npm_app
-    restart: always
-    ports:
-      - '80:80'
-      - '443:443'
-      - '81:81'
+    restart: unless-stopped
     environment:
-      TZ: "Europe/Brussels"
+      TZ: ${TZ}
     volumes:
       - ${DATADIR}/npm/data:/data
       - ${DATADIR}/npm/letsencrypt:/etc/letsencrypt
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:81/api/"]
+      interval: 60s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
     networks:
       default:
         ipv4_address: ${NETWORK_ADDRESS}
     labels:
-      npm.proxy.domains: "npm.int.krokantekrab.be"
+      npm.proxy.domains: npm.int.krokantekrab.be
       npm.proxy.port: "81"
       npm.proxy.ssl.certificate.id: "8"
     logging:
@@ -25,17 +32,19 @@ services:
         max-size: "1m"
 
   npm_docker_sync:
-    image: 'ghcr.io/redth/npm-docker-sync:latest'
-    restart: always
+    image: ghcr.io/redth/npm-docker-sync:latest
+    container_name: npm_docker_sync
+    restart: unless-stopped
     depends_on:
-      - npm_app
+      npm_app:
+        condition: service_healthy
     environment:
-      TZ: "Europe/Brussels"
-      DOCKER_HOST: "unix:///var/run/docker.sock"
-      NPM_URL: "http://npm_app:81"
+      TZ: ${TZ}
+      DOCKER_HOST: unix:///var/run/docker.sock
+      NPM_URL: http://npm_app:81
       NPM_EMAIL: ${NPM_EMAIL}
       NPM_PASSWORD: ${NPM_PASSWORD}
-      NPM_CONTAINER_NAME: "npm_app"
+      NPM_CONTAINER_NAME: npm_app
       NPM_PROXY_SSL_FORCE: "true"
       NPM_PROXY_HSTS: "true"
       NPM_PROXY_HSTS_SUBDOMAINS: "true"
@@ -46,8 +55,3 @@ services:
       driver: json-file
       options:
         max-size: "1m"
-
-networks:
-  default:
-    name: ${NETWORK}
-    external: true
