@@ -1,0 +1,45 @@
+networks:
+  default:
+    external: true
+    name: ${NETWORK}
+
+services:
+  hermes:
+    image: nousresearch/hermes-agent:latest
+    container_name: hermes
+    restart: unless-stopped
+    environment:
+      HERMES_UID: ${HERMES_UID}
+      HERMES_GID: ${HERMES_GID}
+      TZ: ${TZ}
+      API_SERVER_HOST: 0.0.0.0
+      API_SERVER_KEY: ${API_SERVER_KEY}
+      # HERMES_DASHBOARD_HOST: ${HERMES_IP}
+      HERMES_DASHBOARD: 1
+      HERMES_DASHBOARD_BASIC_AUTH_USERNAME: ${HERMES_USR}
+      HERMES_DASHBOARD_BASIC_AUTH_PASSWORD: ${HERMES_PWD}
+      MISTRAL_API_KEY: ${MISTRAL_API_KEY}
+      DEFAULT_LLM_PROVIDER: ${DEFAULT_LLM_PROVIDER}
+      DEFAULT_LLM_MODEL: ${DEFAULT_LLM_MODEL}
+    volumes:
+      - ${DIR_CONFIG}/hermes/data:/opt/data
+    networks:
+      default:
+        ipv4_address: ${HERMES_IP}
+    command: ["gateway", "run"]
+
+#  hermes-dashboard:
+#    image: nousresearch/hermes-agent:latest
+#    container_name: hermes-dashboard
+#    restart: unless-stopped
+#    depends_on:
+#      - hermes
+#    environment:
+#      HERMES_UID: ${HERMES_UID}
+#      HERMES_GID: ${HERMES_GID}
+#    volumes:
+#      - ${DIR_CONFIG}/hermes/data:/opt/data
+#    networks:
+#      default:
+#        ipv4_address: ${HERMES_DASHBOARD_IP}
+#    command: ["dashboard", "--host", "0.0.0.0", "--no-open"]
