@@ -1,0 +1,41 @@
+{
+    "flashRecord": [
+        {
+            "chip": "mg21",
+            "serialPortPath": "/dev/ttyS4",
+            "state": "idle",
+            "baudRate": null,
+            "flashType": "official",
+            "connectResult": {
+                "model": "EFR32MG21A020F768IM32-B SiliconLabs",
+                "firmwareVersion": "",
+                "deviceType": "iHost MG21"
+            },
+            "firmware": {
+                "version": "6.10.9",
+                "firmwareType": "Zigbee",
+                "name": "ihost_mg21_zigbee_stable_6.10.9_115200.gbl"
+            }
+        },
+        {
+            "chip": "mg24",
+            "serialPortPath": "/dev/ttyUSB0",
+            "state": "idle",
+            "baudRate": null,
+            "flashType": "official",
+            "connectResult": {
+                "model": "",
+                "firmwareVersion": "SL-OPENTHREAD/2.4.4.0",
+                "deviceType": "Dongle-PMG24",
+                "firmwareType": "OpenThread"
+            },
+            "firmware": {
+                "version": "2.4.4",
+                "firmwareType": "OpenThread",
+                "name": "donglepmg24_mg24_openthread_stable_2.4.4_460800.gbl",
+                "originalFilename": ""
+            }
+        }
+    ],
+    "cookies": {}
+}
