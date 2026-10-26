@@ -135,8 +135,7 @@ it up.
 ## Conventions (hard rules)
 
 These apply to every stack. `media/docker-compose.yml` is the reference
-implementation for most of them (exception: rule 5 — its environment
-variables use the array form and still need converting).
+implementation.
 
 1. **Logging** — JSON file driver with a maximum size, so logs can't fill the
    disk:
@@ -209,3 +208,11 @@ getting flagged — clean history is the only real fix for that.
   password and the full IP plan.
 - `appdata/` is gitignored: it is live data (databases, caches, letsencrypt
   certificates), not configuration.
+- The arr apps (Sonarr, Radarr, Prowlarr, Bazarr) ask for a login when reached
+  through the proxy: NPM's `X-Forwarded-For` header makes them enforce
+  authentication even though their own setting skips it for LAN addresses.
+  That is accepted as-is — the direct macvlan URLs still skip it.
+- NPM also serves a few manual routes that predate the label sync
+  (`fotos.int` → immich by IP, `home.int` → 192.168.1.4:8123,
+  `wairuha.int` → 192.168.1.6:8081). They are deliberate; the sync only
+  manages label-registered routes and leaves them alone.

@@ -16,8 +16,7 @@ picture; this file is the rule set for changing anything in this repository.
 
 ## Hard rules for every compose file
 
-`media/docker-compose.yml` is the reference implementation, except that its
-`environment` entries use the array form (rule 3 violation, pending migration).
+`media/docker-compose.yml` is the reference implementation.
 
 1. Every service defines `container_name`.
 2. Every service sets `TZ` (mapping form, value from `.env`, e.g. `TZ: ${TZ}`).
@@ -76,6 +75,18 @@ picture; this file is the rule set for changing anything in this repository.
    - After changing labels, verify in `docker logs npm_docker_sync`
      that the host was created/updated; the sync can miss a plain container
      restart, and restarting the sync container forces a rescan.
+   - The sync deletes and recreates a proxy host whenever its labeled
+     container is recreated, so manual per-host NPM tweaks (advanced config)
+     do not survive container recreation — don't build on them.
+   - Manual NPM hosts for domains no label claims (`fotos.int`,
+     `home.int`, `wairuha.int`) are deliberate routes to non-label-managed
+     targets; don't remove them.
+   - The *arr apps (Sonarr/Radarr/Prowlarr/Bazarr) enforce authentication for
+     any request carrying an X-Forwarded-For header, even with
+     `AuthenticationRequired: DisabledForLocalAddresses` — so they show a
+     login screen when reached through NPM. That is intentional: don't strip
+     the header at NPM and don't disable app authentication to work around
+     it.
 10. Services that run as a non-root user (UID/GID env vars, e.g.
     `HERMES_UID`) must have `appdata/<service>` owned by that UID/GID. A
     mismatch crash-loops the container with permission errors on start. Fix
@@ -137,11 +148,9 @@ probe the running container first, then write it into the compose file.
 
 ## Migration status (as of 2026-10)
 
-Aligned: `grimmory/`, `hermes/`, `immich/`, `homeassist/`, `netbird/`,
-`npm/`, `vinyl/`. Known offenders: `media/` (array-form environment, missing
-healthchecks, tdarr lacks container_name; error-level yamllint findings).
-When asked to fix a stack, bring it into compliance with all rules above;
-don't leave half-migrated states.
+All stacks are aligned: `grimmory/`, `hermes/`, `immich/`, `homeassist/`,
+`netbird/`, `npm/`, `vinyl/`, `media/`. When asked to fix a stack, bring it
+into compliance with all rules above; don't leave half-migrated states.
 
 When creating a new stack, copy the shape of `netbird/docker-compose.yml` and
 add a `.env.example`.

@@ -2,110 +2,165 @@ networks:
   default:
     external: true
     name: ${NETWORK}
-  host:
-    external: true
 
 services:
   transmission:
     image: lscr.io/linuxserver/transmission:latest
+    container_name: transmission
     restart: unless-stopped
     environment:
-    - TZ=${TIMEZONE}
-    - PGID=0
-    - PUID=0
+      TZ: ${TIMEZONE}
+      PUID: "0"
+      PGID: "0"
     volumes:
-    - ${DIR_DOWNLOADS_COMPLETE}:/downloads/complete:rw
-    - ${DIR_DOWNLOADS_INCOMPLETE}:/downloads/incomplete:rw
-    - ${DIR_CONFIG}/transmission/config:/config:rw
-    logging:
-      driver: json-file
-      options:
-        max-size: "1m"
+      - ${DIR_DOWNLOADS_COMPLETE}:/downloads/complete:rw
+      - ${DIR_DOWNLOADS_INCOMPLETE}:/downloads/incomplete:rw
+      - ${DIR_CONFIG}/transmission/config:/config:rw
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/transmission/web/"]
+      interval: 60s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
     networks:
       default:
         ipv4_address: ${IP_TRANSMISSION}
+    labels:
+      npm.proxy.domains: transmission.int.krokantekrab.be
+      npm.proxy.port: "80"
+      npm.proxy.ssl.certificate.id: "8"
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
 
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
     restart: unless-stopped
     environment:
-    - TZ=${TIMEZONE}
-    - PUID=0
-    - PGID=0
+      TZ: ${TIMEZONE}
+      PUID: "0"
+      PGID: "0"
     volumes:
-    - ${DIR_CONFIG}/prowlarr/config:/config
-    logging:
-      driver: json-file
-      options:
-        max-size: "1m"
+      - ${DIR_CONFIG}/prowlarr/config:/config
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/ping"]
+      interval: 60s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
     networks:
       default:
         ipv4_address: ${IP_PROWLARR}
+    labels:
+      npm.proxy.domains: prowlarr.int.krokantekrab.be
+      npm.proxy.port: "80"
+      npm.proxy.ssl.certificate.id: "8"
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
 
   sonarr:
     image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
     restart: unless-stopped
     environment:
-    - TZ=${TIMEZONE}
-    - PUID=0
-    - PGID=0
+      TZ: ${TIMEZONE}
+      PUID: "0"
+      PGID: "0"
     volumes:
-    - ${DIR_CONFIG}/sonarr/config:/config
-    - ${DIR_SERIES}:/tv
-    - ${DIR_DOWNLOADS_COMPLETE}:/downloads/complete
-    - ${DIR_DOWNLOADS_INCOMPLETE}:/downloads/incomplete
-    logging:
-      driver: json-file
-      options:
-        max-size: "1m"
+      - ${DIR_CONFIG}/sonarr/config:/config
+      - ${DIR_SERIES}:/tv
+      - ${DIR_DOWNLOADS_COMPLETE}:/downloads/complete
+      - ${DIR_DOWNLOADS_INCOMPLETE}:/downloads/incomplete
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/ping"]
+      interval: 60s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
     networks:
       default:
         ipv4_address: ${IP_SONARR}
+    labels:
+      npm.proxy.domains: sonarr.int.krokantekrab.be
+      npm.proxy.port: "80"
+      npm.proxy.ssl.certificate.id: "8"
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
 
   radarr:
     image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
     restart: unless-stopped
     environment:
-    - TZ=${TIMEZONE}
-    - PUID=0
-    - PGID=0
+      TZ: ${TIMEZONE}
+      PUID: "0"
+      PGID: "0"
     volumes:
-    - ${DIR_CONFIG}/radarr/config:/config
-    - ${DIR_FILMS}:/movies
-    - ${DIR_SPORTS}:/sports
-    - ${DIR_DOWNLOADS_COMPLETE}:/downloads/complete
-    - ${DIR_DOWNLOADS_INCOMPLETE}:/downloads/incomplete
-    logging:
-      driver: json-file
-      options:
-        max-size: "1m"
+      - ${DIR_CONFIG}/radarr/config:/config
+      - ${DIR_FILMS}:/movies
+      - ${DIR_SPORTS}:/sports
+      - ${DIR_DOWNLOADS_COMPLETE}:/downloads/complete
+      - ${DIR_DOWNLOADS_INCOMPLETE}:/downloads/incomplete
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/ping"]
+      interval: 60s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
     networks:
       default:
         ipv4_address: ${IP_RADARR}
-
-  bazarr:
-    image: lscr.io/linuxserver/bazarr:latest
-    restart: unless-stopped
-    environment:
-    - TZ=${TIMEZONE}
-    - PUID=0
-    - PGID=0
-    volumes:
-    - ${DIR_CONFIG}/bazarr/config:/config
-    - ${DIR_FILMS}:/movies
-    - ${DIR_SERIES}:/tv
+    labels:
+      npm.proxy.domains: radarr.int.krokantekrab.be
+      npm.proxy.port: "80"
+      npm.proxy.ssl.certificate.id: "8"
     logging:
       driver: json-file
       options:
         max-size: "1m"
+
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
+    restart: unless-stopped
+    environment:
+      TZ: ${TIMEZONE}
+      PUID: "0"
+      PGID: "0"
+    volumes:
+      - ${DIR_CONFIG}/bazarr/config:/config
+      - ${DIR_FILMS}:/movies
+      - ${DIR_SERIES}:/tv
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      interval: 60s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
     networks:
       default:
         ipv4_address: ${IP_BAZARR}
+    labels:
+      npm.proxy.domains: bazarr.int.krokantekrab.be
+      npm.proxy.port: "80"
+      npm.proxy.ssl.certificate.id: "8"
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
 
   jellyfin:
     image: ghcr.io/jellyfin/jellyfin:latest
+    container_name: jellyfin
     restart: unless-stopped
     environment:
+      TZ: ${TIMEZONE}
       JELLYFIN_PublishedServerUrl: http://${IP_JELLYFIN}:8096
     volumes:
       - ${DIR_CONFIG}/jellyfin/config:/config
@@ -114,41 +169,59 @@ services:
       - ${DIR_FILMS}:/media/movies:ro
       - ${DIR_SERIES}:/media/tvshows:ro
       - ${DIR_SPORTS}:/media/sports:ro
+    # healthcheck is built into the image (verified passing)
     devices:
       - /dev/dri:/dev/dri
+    networks:
+      default:
+        ipv4_address: ${IP_JELLYFIN}
+    labels:
+      npm.proxy.domains: jellyfin.int.krokantekrab.be
+      npm.proxy.port: "8096"
+      npm.proxy.ssl.certificate.id: "8"
     logging:
       driver: json-file
       options:
         max-size: "1m"
-    networks:
-      default:
-        ipv4_address: ${IP_JELLYFIN}
 
   tdarr:
     image: ghcr.io/haveagitgat/tdarr:latest
+    container_name: tdarr
     restart: unless-stopped
     environment:
-      - TZ=${TIMEZONE}
-      - PUID=0
-      - PGID=0
-      - serverIP=0.0.0.0
-      - serverPort=8266
-      - webUIPort=8265
-      - internalNode=true
-      - inContainer=true
-      - nodeName=Wairuha
-      - ffmpegVersion=6
+      TZ: ${TIMEZONE}
+      PUID: "0"
+      PGID: "0"
+      serverIP: "0.0.0.0"
+      serverPort: "8266"
+      webUIPort: "8265"
+      internalNode: "true"
+      inContainer: "true"
+      nodeName: Wairuha
+      ffmpegVersion: "6"
     volumes:
       - ${DIR_CONFIG}/tdarr/server:/app/server
       - ${DIR_CONFIG}/tdarr/configs:/app/configs
       - ${DIR_CONFIG}/tdarr/logs:/app/logs
       - ${DIR_CONFIG}/tdarr/transcode:/temp
-      # - ${DIR_TRANSCODE}:/temp
       - ${DIR_FILMS}:/media/movies
       - ${DIR_SERIES}:/media/tvshows
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8265/"]
+      interval: 60s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
     devices:
       - /dev/dri:/dev/dri
     networks:
       default:
         ipv4_address: ${IP_TDARR}
-
+    labels:
+      npm.proxy.domains: tdarr.int.krokantekrab.be
+      npm.proxy.port: "8265"
+      npm.proxy.ssl.certificate.id: "8"
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
