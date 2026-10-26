@@ -1,0 +1,51 @@
+networks:
+  default:
+    external: true
+    name: ${NETWORK}
+
+services:
+  netbird-rp:
+    image: netbirdio/netbird:latest
+    container_name: netbird-rp
+    hostname: netbird-rp
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+      - SYS_ADMIN
+      - SYS_RESOURCE
+    devices:
+      - /dev/net/tun
+    environment:
+      TZ: ${TZ}
+      NB_SETUP_KEY: ${NETBIRD_SETUP_KEY}
+      NB_WIREGUARD_PORT: "51820"
+      NB_DISABLE_UPNP: "true"
+    volumes:
+      - ${DIR_CONFIG}/netbird:/var/lib/netbird
+    networks:
+      default:
+        ipv4_address: ${NETBIRD_IP}
+    # network_mode: host
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+
+  adguard-home:
+    image: adguard/adguardhome
+    container_name: adguard-home
+    hostname: adguard-home
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ}
+    volumes:
+      - ${DIR_CONFIG}/adguard/conf:/opt/adguardhome/conf
+      - ${DIR_CONFIG}/adguard/work:/opt/adguardhome/work
+    networks:
+      default:
+        ipv4_address: ${ADGUARD_IP}
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+    
