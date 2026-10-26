@@ -1,0 +1,101 @@
+# AGENTS.md
+
+Docker Compose stacks for a home server. One directory per stack, each with
+its own `docker-compose.yml` and `.env`. Humans read `README.md` for the full
+picture; this file is the rule set for changing anything in this repository.
+
+## Layout
+
+- `<stack>/docker-compose.yml` — the stack definition.
+- `<stack>/.env` — all secrets and stack variables. **gitignored, never
+  commit, never reference values from it in committed files.**
+- `<stack>/.env.example` — committed template: every variable the compose file
+  reads, with placeholder values. When adding a variable to a compose file,
+  add it to `.env.example` too.
+- `appdata/` — live container data. gitignored. Never edit, never commit.
+- `network.txt` — host-side macvlan setup. Reference only.
+
+## Hard rules for every compose file
+
+`media/docker-compose.yml` is the reference implementation, except that its
+`environment` entries use the array form (rule 3 violation, pending migration).
+
+1. Every service defines `container_name`.
+2. Every service sets `TZ` (mapping form, value from `.env`, e.g. `TZ: ${TZ}`).
+3. `environment` uses the mapping form, not the array form:
+   ```yaml
+   environment:
+     TZ: ${TZ}
+     PUID: "0"
+   ```
+4. Every service has:
+   ```yaml
+   restart: unless-stopped
+   logging:
+     driver: json-file
+     options:
+       max-size: "1m"
+   ```
+5. Healthchecks wherever the image supports a meaningful check (HTTP endpoint,
+   CLI status command). Databases: use their admin ping command.
+6. Network exposure:
+   - Exposed services join the external macvlan network and get a static IP
+     from `.env`:
+     ```yaml
+     networks:
+       default:
+         external: true
+         name: ${NETWORK}
+     # per service:
+         ipv4_address: ${SERVICE_IP}
+     ```
+   - Backend-only services (databases, caches, workers) must NOT take a
+     static IP — join without `ipv4_address` or use an internal network.
+   - No `ports:` publishing; exposed services are reached via their macvlan IP.
+7. Secrets live only in `.env`. Compose files reference `${VARIABLE}`, never a
+   literal password, key, or token. This includes connection URLs.
+8. Persistent volumes point at `/opt/composition/appdata/<service>` via a
+   `${DIR_CONFIG}`-style variable from `.env`.
+
+## IP addressing
+
+- macvlan network `services` on the LAN. Usable container range:
+  `192.168.1.64/26` (`192.168.1.64`–`192.168.1.127`); host side is
+  `192.168.1.10` (see `network.txt`).
+- Static IPs are assigned in the stack `.env`, never hardcoded in the compose
+  file.
+- Before adding a service with a static IP, grep the existing `.env` files and
+  `README.md` for the address you plan to use. If it's taken or you're unsure
+  which address to allocate, ask — don't guess into a running LAN.
+
+## Validation before committing
+
+Both must pass:
+
+```sh
+yamllint **/docker-compose.y*ml   # all YAML must pass with default rules
+betterleaks                        # secret detection, including git history
+```
+
+If `betterleaks` flags a secret in committed files, the fix is rotating the
+secret and removing it from history — not renaming the variable.
+
+## Migration status (as of 2026-10)
+
+Not all stacks follow the rules yet. Known offenders: `form2xml/` and
+`vinyl/` (old `npm_network`, Traefik/flame labels, no container_name for
+vinyl, `restart: always`), `npm/` (`restart: always`, published ports,
+hardcoded TZ), `immich/` (hardcoded
+network name and IP, missing healthcheck config, published port),
+`grimmory/` and `hermes/` (hermes is missing logging; grimmory has bracket
+spacing), `homeassist/` (compose file uses `.yaml` extension instead of
+`.yml`, array-form environment, several services lack `container_name`),
+`media/` (array-form environment, missing healthchecks, tdarr lacks
+container_name), `netbird/` (adguard-home lacks a healthcheck, trailing
+spaces). Error-level yamllint findings exist in `media/`, `grimmory/`,
+`homeassist/`, `immich/` and `netbird/` (indentation, line length, bracket
+spacing, trailing spaces/blank lines). When asked to fix a stack, bring it
+into compliance with all rules above; don't leave half-migrated states.
+
+When creating a new stack, copy the shape of `netbird/docker-compose.yml` and
+add a `.env.example`.
