@@ -2,6 +2,8 @@ networks:
   default:
     name: ${NETWORK}
     external: true
+  sync:
+    internal: true
 
 services:
   npm_app:
@@ -22,6 +24,7 @@ services:
     networks:
       default:
         ipv4_address: ${NETWORK_ADDRESS}
+      sync:
     labels:
       npm.proxy.domains: npm.int.krokantekrab.be
       npm.proxy.port: "81"
@@ -51,6 +54,8 @@ services:
       NPM_PROXY_WEBSOCKETS: "true"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      sync:
     logging:
       driver: json-file
       options:
