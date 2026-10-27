@@ -35,3 +35,45 @@ services:
       driver: json-file
       options:
         max-size: "1m"
+
+  # Markdown -> ESC/POS printer service, developed in /home/jeroen/uep-ingest.
+  # USB printer (GDMicroelectronics YC Printer 28e9:0289) is passed through by
+  # mapping the whole bus, so replugging the printer (new device node) does
+  # not break the setup.
+  escpos-printer:
+    build: /home/jeroen/uep-ingest
+    image: markdown-escpos-printer:latest
+    container_name: escpos-printer
+    restart: unless-stopped
+    devices:
+      - /dev/bus/usb:/dev/bus/usb
+    environment:
+      TZ: ${TIMEZONE}
+      PRINTER_BACKEND: usb
+      USB_VENDOR_ID: "0x28e9"
+      USB_PRODUCT_ID: "0x0289"
+      PAPER_WIDTH_CHARS: "32"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import urllib.request, sys;
+          u = urllib.request.urlopen('http://127.0.0.1:8000/health');
+          sys.exit(0 if u.status == 200 else 1)
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 5s
+    networks:
+      default:
+        ipv4_address: ${IP_ESCPOS}
+    labels:
+      npm.proxy.domains: printer.int.krokantekrab.be
+      npm.proxy.port: "8000"
+      npm.proxy.ssl.certificate.id: "8"
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
