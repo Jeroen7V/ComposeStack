@@ -8,6 +8,8 @@ networks:
   default:
     external: true
     name: ${NETWORK}
+  internal:
+    internal: true
 
 services:
   immich-server:
@@ -33,6 +35,7 @@ services:
     networks:
       default:
         ipv4_address: ${IMMICH_IP}
+      internal:
     labels:
       npm.proxy.domains: immich.int.krokantekrab.be
       npm.proxy.port: "2283"
@@ -54,6 +57,8 @@ services:
       disable: false
     devices:
       - /dev/dri:/dev/dri
+    networks:
+      internal:
     logging:
       driver: json-file
       options:
@@ -67,6 +72,8 @@ services:
     healthcheck:
       test: redis-cli ping || exit 1
     restart: unless-stopped
+    networks:
+      internal:
     logging:
       driver: json-file
       options:
@@ -85,6 +92,8 @@ services:
       - ${DB_DATA_LOCATION}:/var/lib/postgresql/data
     shm_size: 128mb
     restart: unless-stopped
+    networks:
+      internal:
     healthcheck:
       disable: false
     logging:

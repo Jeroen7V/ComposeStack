@@ -2,6 +2,8 @@ networks:
   default:
     external: true
     name: ${NETWORK}
+  internal:
+    internal: true
 
 services:
   grimmory:
@@ -36,6 +38,7 @@ services:
     networks:
       default:
         ipv4_address: ${GRIMMORY_IP}
+      internal:
     labels:
       npm.proxy.domains: grimmory.int.krokantekrab.be
       npm.proxy.port: ${GRIMMORY_PORT}
@@ -60,6 +63,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    networks:
+      internal:
     logging:
       driver: json-file
       options:
