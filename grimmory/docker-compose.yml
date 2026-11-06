@@ -43,6 +43,13 @@ services:
       npm.proxy.domains: grimmory.int.krokantekrab.be
       npm.proxy.port: ${GRIMMORY_PORT}
       npm.proxy.ssl.certificate.id: "8"
+      # Kobo sync needs larger proxy buffers (see grimmory.org
+      # /docs/integration/kobo/); the forwarded headers come from NPM itself.
+      npm.proxy.advanced.config: |
+        proxy_buffer_size 128k;
+        proxy_buffers 4 256k;
+        proxy_busy_buffers_size 256k;
+        large_client_header_buffers 8 32k;
 
   mariadb:
     image: lscr.io/linuxserver/mariadb:11.4.5
