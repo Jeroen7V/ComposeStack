@@ -36,14 +36,13 @@ services:
       options:
         max-size: "1m"
 
-  # Markdown -> ESC/POS printer service, developed in /home/jeroen/uep-ingest.
-  # USB printer (GDMicroelectronics YC Printer 28e9:0289) is passed through by
-  # mapping the whole bus, so replugging the printer (new device node) does
-  # not break the setup.
-  escpos-printer:
-    build: /home/jeroen/uep-ingest
-    image: markdown-escpos-printer:latest
-    container_name: escpos-printer
+  # Markdown -> ESC/POS printer service (EMPS), published at
+  # ghcr.io/jeroen7v/emps. USB printer (GDMicroelectronics YC Printer
+  # 28e9:0289) is passed through by mapping the whole bus, so replugging
+  # the printer (new device node) does not break the setup.
+  emps:
+    image: ghcr.io/jeroen7v/emps:latest
+    container_name: emps
     restart: unless-stopped
     devices:
       - /dev/bus/usb:/dev/bus/usb
@@ -70,7 +69,7 @@ services:
       default:
         ipv4_address: ${IP_ESCPOS}
     labels:
-      npm.proxy.domains: printer.int.krokantekrab.be
+      npm.proxy.domains: emps.int.krokantekrab.be
       npm.proxy.port: "8000"
       npm.proxy.ssl.certificate.id: "8"
     logging:

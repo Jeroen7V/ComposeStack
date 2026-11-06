@@ -107,7 +107,7 @@ backends.
 | `immich`     | immich server, machine learning, redis, postgres  | 82 (server only)                |
 | `npm`        | nginx proxy manager, npm-docker-sync              | 84                               |
 | `grimmory`   | grimmory, mariadb                                  | 81 (grimmory only)               |
-| `homeassist` | music-assistant, escpos-printer (markdown -> ESC/POS, from `~/uep-ingest`) | 75, 89                           |
+| `homeassist` | music-assistant, emps (markdown -> ESC/POS, ghcr.io/jeroen7v/emps) | 75, 89                           |
 | `netbird`    | netbird routing peer, adguard-home                | 85, 86                           |
 | `hermes`     | hermes agent                                      | 87                               |
 | `vinyl`      | vinyl sorter (discogssorter)                      | 83                               |
